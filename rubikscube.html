@@ -387,6 +387,9 @@
       if (e.key === 'ArrowDown') viewRotation.x += rotSpeed;
       if (e.key === 'ArrowLeft') viewRotation.y -= rotSpeed;
       if (e.key === 'ArrowRight') viewRotation.y += rotSpeed;
+      
+      // Clamp vertical rotation to prevent flipping
+      viewRotation.x = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, viewRotation.x));
 
       // Cube rotations
       if (key === 'r') rotateLayer('R', clockwise);
@@ -415,6 +418,9 @@
       
       viewRotation.y -= deltaX * 0.005; // Reversed direction
       viewRotation.x += deltaY * 0.005;
+      
+      // Clamp vertical rotation to prevent flipping
+      viewRotation.x = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, viewRotation.x));
       
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
