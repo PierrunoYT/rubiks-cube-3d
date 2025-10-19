@@ -35,10 +35,14 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/rubiks-cube.git
+   git clone https://github.com/yourusername/rubiks-cube-3d.git
    ```
 
 2. Open `rubikscube.html` in your browser - that's it!
+
+## 🌐 Live Demo
+
+**[Try it live on GitHub Pages!](https://yourusername.github.io/rubiks-cube-3d/rubikscube.html)**
 
 No build process, no dependencies to install. Just open and play!
 
