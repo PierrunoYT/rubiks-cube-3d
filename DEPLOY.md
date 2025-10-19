@@ -2,6 +2,47 @@
 
 This guide will help you deploy your Rubik's Cube to GitHub Pages.
 
+## ⚠️ Important: Local Development
+
+**This project uses ES6 modules and requires a web server to run locally.**
+
+You cannot simply open `rubikscube.html` directly in your browser (via `file://` protocol) due to CORS restrictions. Instead, use one of these methods:
+
+### Quick Start - Local Development Server
+
+**Option 1: Python** (easiest if you have Python installed)
+```bash
+# Navigate to project directory
+cd "D:\Github\Model test"
+
+# Python 3
+python -m http.server 8000
+
+# Python 2
+python -m SimpleHTTPServer 8000
+```
+Then open: `http://localhost:8000/rubikscube.html`
+
+**Option 2: Node.js**
+```bash
+# Install http-server globally (one time)
+npm install -g http-server
+
+# Run in project directory
+http-server
+```
+Then open: `http://localhost:8080/rubikscube.html`
+
+**Option 3: VS Code Live Server**
+- Install "Live Server" extension in VS Code
+- Right-click `rubikscube.html` → "Open with Live Server"
+
+**Option 4: PHP**
+```bash
+php -S localhost:8000
+```
+Then open: `http://localhost:8000/rubikscube.html`
+
 ## 📋 Steps to Deploy
 
 ### 1. Create GitHub Repository

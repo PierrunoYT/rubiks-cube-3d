@@ -124,7 +124,23 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
    cd rubiks-cube-3d
    ```
 
-2. Open `rubikscube.html` in your browser - that's it!
+2. **Start a local web server** (required for ES6 modules):
+   
+   **Python** (recommended):
+   ```bash
+   python -m http.server 8000
+   ```
+   Then open: `http://localhost:8000/rubikscube.html`
+   
+   **Node.js**:
+   ```bash
+   npx http-server
+   ```
+   Then open: `http://localhost:8080/rubikscube.html`
+   
+   **VS Code**: Install "Live Server" extension, right-click `rubikscube.html` → "Open with Live Server"
+
+⚠️ **Note**: You cannot open `rubikscube.html` directly from the file system (file:// protocol) due to CORS restrictions with ES6 modules. A web server is required for local development.
 
 ### Quick Start Guide
 1. **Scramble** the cube using the 🎲 button or press **S**
