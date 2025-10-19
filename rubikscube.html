@@ -185,6 +185,8 @@
     const groundMaterial = new THREE.MeshPhongMaterial({ 
       color: 0x0a0a12,
       shininess: 10,
+      transparent: true,
+      opacity: 0.3,
       side: THREE.DoubleSide
     });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
@@ -196,6 +198,8 @@
     // Add a subtle grid for depth perception
     const gridHelper = new THREE.GridHelper(20, 20, 0x1a1a2e, 0x0f0f1e);
     gridHelper.position.y = -2.99;
+    gridHelper.material.transparent = true;
+    gridHelper.material.opacity = 0.3;
     scene.add(gridHelper);
 
     // ===== RUBIK'S CUBE DATA STRUCTURE =====
@@ -699,6 +703,22 @@
       camera.position.y = radius * Math.sin(viewRotation.x);
       camera.position.z = radius * Math.cos(viewRotation.y) * Math.cos(viewRotation.x);
       camera.lookAt(0, 0, 0);
+      
+      // Fade out ground and grid when camera is below or near the cube level
+      const fadeThreshold = 1; // Start fading when camera Y is below this
+      const fadeRange = 3; // Full fade range
+      const cameraHeight = camera.position.y;
+      
+      let opacity = 0.3;
+      if (cameraHeight < fadeThreshold) {
+        // Calculate opacity based on camera height
+        opacity = Math.max(0, Math.min(0.3, (cameraHeight + fadeRange) / fadeRange * 0.3));
+      }
+      
+      ground.material.opacity = opacity;
+      gridHelper.material.opacity = opacity;
+      ground.visible = opacity > 0.01;
+      gridHelper.visible = opacity > 0.01;
       
       renderer.render(scene, camera);
     }
