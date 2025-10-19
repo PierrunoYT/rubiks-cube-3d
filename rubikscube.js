@@ -858,31 +858,186 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ===== MOUSE CONTROLS =====
+let isDraggingLayer = false;
+let draggedLayer = null;
+let dragStartX = 0;
+let dragStartY = 0;
+let shiftPressed = false;
+
 document.addEventListener('mousedown', (e) => {
   mouseDown = true;
   lastMouseX = e.clientX;
   lastMouseY = e.clientY;
+  shiftPressed = e.shiftKey;
+  
+  // If shift is pressed, check if clicking on a layer
+  if (shiftPressed && !isRotating && !isSolving && !isScrambling && !isPreviewing) {
+    const clickedLayer = getLayerFromClick(e);
+    if (clickedLayer) {
+      isDraggingLayer = true;
+      draggedLayer = clickedLayer;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      e.preventDefault();
+    }
+  }
 });
 
 document.addEventListener('mousemove', (e) => {
   if (!mouseDown) return;
   
-  const deltaX = e.clientX - lastMouseX;
-  const deltaY = e.clientY - lastMouseY;
-  
-  viewRotation.y -= deltaX * 0.005; // Reversed direction
-  viewRotation.x += deltaY * 0.005;
-  
-  // Clamp vertical rotation to prevent flipping
-  viewRotation.x = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, viewRotation.x));
-  
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
+  // If dragging a layer with shift
+  if (isDraggingLayer && draggedLayer && !isRotating) {
+    const deltaX = e.clientX - dragStartX;
+    const deltaY = e.clientY - dragStartY;
+    const threshold = 30; // Minimum drag distance to trigger rotation
+    
+    if (Math.abs(deltaX) > threshold || Math.abs(deltaY) > threshold) {
+      const rotationInfo = determineRotationFromDrag(draggedLayer, deltaX, deltaY);
+      if (rotationInfo) {
+        rotateLayer(rotationInfo.face, rotationInfo.clockwise);
+      }
+      isDraggingLayer = false;
+      draggedLayer = null;
+      mouseDown = false;
+    }
+  }
+  // Normal camera rotation
+  else if (!isDraggingLayer) {
+    const deltaX = e.clientX - lastMouseX;
+    const deltaY = e.clientY - lastMouseY;
+    
+    viewRotation.y -= deltaX * 0.005; // Reversed direction
+    viewRotation.x += deltaY * 0.005;
+    
+    // Clamp vertical rotation to prevent flipping
+    viewRotation.x = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, viewRotation.x));
+    
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+  }
 });
 
 document.addEventListener('mouseup', () => {
   mouseDown = false;
+  isDraggingLayer = false;
+  draggedLayer = null;
 });
+
+// Get which layer was clicked
+function getLayerFromClick(event) {
+  // Calculate mouse position in normalized device coordinates
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  
+  // Update the picking ray
+  raycaster.setFromCamera(mouse, camera);
+  
+  // Calculate objects intersecting the picking ray
+  const intersects = raycaster.intersectObjects(cubeGroup.children, true);
+  
+  if (intersects.length > 0) {
+    // Find the cubelet that was clicked
+    let clickedCubelet = null;
+    for (let i = 0; i < intersects.length; i++) {
+      const object = intersects[i].object;
+      // Find the parent cubelet group
+      let current = object;
+      while (current.parent && current.parent !== cubeGroup) {
+        current = current.parent;
+      }
+      if (current.parent === cubeGroup) {
+        clickedCubelet = current;
+        break;
+      }
+    }
+    
+    if (clickedCubelet) {
+      // Determine which face/layer this cubelet belongs to
+      const pos = clickedCubelet.position;
+      const tolerance = 0.1;
+      
+      // Determine which layers this cubelet is part of
+      const layers = {
+        face: null,
+        position: pos.clone()
+      };
+      
+      if (Math.abs(pos.x - 1) < tolerance) layers.R = true;
+      if (Math.abs(pos.x + 1) < tolerance) layers.L = true;
+      if (Math.abs(pos.y - 1) < tolerance) layers.U = true;
+      if (Math.abs(pos.y + 1) < tolerance) layers.D = true;
+      if (Math.abs(pos.z - 1) < tolerance) layers.F = true;
+      if (Math.abs(pos.z + 1) < tolerance) layers.B = true;
+      
+      return layers;
+    }
+  }
+  
+  return null;
+}
+
+// Determine rotation direction based on drag
+function determineRotationFromDrag(layer, deltaX, deltaY) {
+  if (!layer) return null;
+  
+  const absDeltaX = Math.abs(deltaX);
+  const absDeltaY = Math.abs(deltaY);
+  
+  // Get camera direction to determine relative drag direction
+  const cameraDir = new THREE.Vector3();
+  camera.getWorldDirection(cameraDir);
+  
+  // Determine which face to rotate based on which layer and drag direction
+  if (layer.R) {
+    // Right face - vertical drag or horizontal drag depending on view
+    if (absDeltaY > absDeltaX) {
+      return { face: 'R', clockwise: deltaY < 0 };
+    } else {
+      return { face: 'R', clockwise: deltaX > 0 };
+    }
+  }
+  if (layer.L) {
+    if (absDeltaY > absDeltaX) {
+      return { face: 'L', clockwise: deltaY > 0 };
+    } else {
+      return { face: 'L', clockwise: deltaX < 0 };
+    }
+  }
+  if (layer.U) {
+    // Top face - horizontal drag determines rotation
+    if (absDeltaX > absDeltaY) {
+      return { face: 'U', clockwise: deltaX < 0 };
+    } else {
+      return { face: 'U', clockwise: deltaY < 0 };
+    }
+  }
+  if (layer.D) {
+    if (absDeltaX > absDeltaY) {
+      return { face: 'D', clockwise: deltaX > 0 };
+    } else {
+      return { face: 'D', clockwise: deltaY > 0 };
+    }
+  }
+  if (layer.F) {
+    // Front face
+    if (absDeltaX > absDeltaY) {
+      return { face: 'F', clockwise: deltaX > 0 };
+    } else {
+      return { face: 'F', clockwise: deltaY > 0 };
+    }
+  }
+  if (layer.B) {
+    if (absDeltaX > absDeltaY) {
+      return { face: 'B', clockwise: deltaX < 0 };
+    } else {
+      return { face: 'B', clockwise: deltaY < 0 };
+    }
+  }
+  
+  return null;
+}
 
 // ===== BUTTON EVENT LISTENERS =====
 document.getElementById('scrambleBtn').addEventListener('click', scrambleCube);
