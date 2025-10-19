@@ -180,15 +180,23 @@
     camera.position.set(5, 5, 5);
     camera.lookAt(0, 0, 0);
 
-    // Add a subtle gradient background
-    const bgGeometry = new THREE.PlaneGeometry(50, 50);
-    const bgMaterial = new THREE.MeshBasicMaterial({ 
-      color: 0x0f0f1e,
+    // Add a ground plane that stays horizontal
+    const groundGeometry = new THREE.PlaneGeometry(50, 50);
+    const groundMaterial = new THREE.MeshPhongMaterial({ 
+      color: 0x0a0a12,
+      shininess: 10,
       side: THREE.DoubleSide
     });
-    const background = new THREE.Mesh(bgGeometry, bgMaterial);
-    background.position.z = -15;
-    scene.add(background);
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2; // Make it horizontal
+    ground.position.y = -3; // Position below the cube
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Add a subtle grid for depth perception
+    const gridHelper = new THREE.GridHelper(20, 20, 0x1a1a2e, 0x0f0f1e);
+    gridHelper.position.y = -2.99;
+    scene.add(gridHelper);
 
     // ===== RUBIK'S CUBE DATA STRUCTURE =====
     const cubeGroup = new THREE.Group();
@@ -219,6 +227,8 @@
       });
       const bodyGeometry = new THREE.BoxGeometry(0.88, 0.88, 0.88);
       const body = new THREE.Mesh(bodyGeometry, blackMaterial);
+      body.castShadow = true;
+      body.receiveShadow = true;
       cubeletGroup.add(body);
       
       // Add rounded corners effect with edge highlights
@@ -256,6 +266,7 @@
           const sticker = new THREE.Mesh(stickerGeometry, stickerMaterial);
           sticker.position.set(...face.pos);
           sticker.rotation.set(...face.rot);
+          sticker.castShadow = true;
           cubeletGroup.add(sticker);
           
           // Add slight border/bevel to sticker for realism
@@ -298,6 +309,14 @@
     const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.9);
     directionalLight1.position.set(10, 10, 10);
     directionalLight1.castShadow = true;
+    directionalLight1.shadow.mapSize.width = 2048;
+    directionalLight1.shadow.mapSize.height = 2048;
+    directionalLight1.shadow.camera.near = 0.5;
+    directionalLight1.shadow.camera.far = 50;
+    directionalLight1.shadow.camera.left = -15;
+    directionalLight1.shadow.camera.right = 15;
+    directionalLight1.shadow.camera.top = 15;
+    directionalLight1.shadow.camera.bottom = -15;
     scene.add(directionalLight1);
 
     const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
