@@ -1,5 +1,8 @@
 // ===== FACE LABELS =====
 
+// Access THREE from global scope
+const THREE = window.THREE;
+
 function createFaceLabel(text, position, color) {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');

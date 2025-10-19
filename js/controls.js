@@ -2,6 +2,9 @@
 
 import * as State from './state.js';
 
+// Access THREE from global scope
+const THREE = window.THREE;
+
 export function setupKeyboardControls(rotateLayerFn, scrambleFn) {
   document.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();

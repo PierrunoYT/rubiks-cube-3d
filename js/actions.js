@@ -2,6 +2,9 @@
 
 import * as State from './state.js';
 
+// Access THREE from global scope
+const THREE = window.THREE;
+
 export function scrambleCube(rotateLayerFn, updateButtonStatesFn) {
   if (State.isRotating || State.isSolving) return;
   

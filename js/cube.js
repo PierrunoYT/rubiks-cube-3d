@@ -1,5 +1,8 @@
 // ===== RUBIK'S CUBE CONSTRUCTION =====
 
+// Access THREE from global scope
+const THREE = window.THREE;
+
 // Standard Rubik's cube colors: Right, Left, Top, Bottom, Front, Back
 export const faceColors = {
   right: 0xB71234,   // Red

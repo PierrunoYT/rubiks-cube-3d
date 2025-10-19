@@ -1,5 +1,8 @@
 // ===== CENTRALIZED STATE MANAGEMENT =====
 
+// Access THREE from global scope
+const THREE = window.THREE;
+
 // Scene-related state
 export let isRotating = false;
 export let isSolving = false;

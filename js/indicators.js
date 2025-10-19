@@ -2,6 +2,9 @@
 
 import * as State from './state.js';
 
+// Access THREE from global scope
+const THREE = window.THREE;
+
 export function createRotationArrow(face, clockwise, rotationCount = 1) {
   const group = new THREE.Group();
   

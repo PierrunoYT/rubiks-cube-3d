@@ -2,6 +2,9 @@
 
 import * as State from './state.js';
 
+// Access THREE from global scope
+const THREE = window.THREE;
+
 // Function to get the color of a sticker at a specific position
 export function getStickerColor(cubelet, face) {
   const children = cubelet.children;

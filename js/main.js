@@ -22,6 +22,13 @@ import { updateMoveCounter, updateButtonStates, setupUIEventListeners } from './
 
 // Initialize the application
 function init() {
+  // Check if THREE.js is loaded
+  if (typeof THREE === 'undefined') {
+    console.error('THREE.js is not loaded yet. Retrying...');
+    setTimeout(init, 100);
+    return;
+  }
+  
   // 1. Initialize scene
   const { scene, camera, renderer, ground, gridHelper } = initScene();
   setupLighting(scene);
@@ -184,5 +191,9 @@ function init() {
 }
 
 // Start the application when DOM is ready
-init();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 

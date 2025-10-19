@@ -2,6 +2,9 @@
 
 import * as State from './state.js';
 
+// Access THREE from global scope
+const THREE = window.THREE;
+
 export function rotateLayer(face, clockwise = true, recordMove = true, state) {
   if (State.isRotating) return;
   State.setIsRotating(true);
