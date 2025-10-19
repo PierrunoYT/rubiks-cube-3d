@@ -250,6 +250,20 @@ body {
   border-radius: 6px;
   border-left: 3px solid rgba(78, 205, 196, 0.3);
   transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.solution-step > span {
+  flex-shrink: 0;
+}
+
+.solution-step > span:last-of-type {
+  flex: 1 1 auto;
+  min-width: 150px;
 }
 
 .solution-step.current {
@@ -261,6 +275,42 @@ body {
 .solution-step.completed {
   opacity: 0.5;
   text-decoration: line-through;
+}
+
+.solution-step.previewing {
+  background: rgba(255, 215, 0, 0.2);
+  border-left-color: #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  animation: preview-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes preview-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+  }
+}
+
+.preview-step-btn {
+  background: linear-gradient(145deg, #2a2a3a, #1a1a2a);
+  color: #4ecdc4;
+  border: 1px solid rgba(78, 205, 196, 0.3);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: auto;
+  min-width: 30px;
+}
+
+.preview-step-btn:hover {
+  background: linear-gradient(145deg, #3a3a4a, #2a2a3a);
+  border-color: rgba(78, 205, 196, 0.6);
+  box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+  transform: scale(1.1);
 }
 
 .solution-step .step-number {

@@ -953,6 +953,7 @@ let currentStepIndex = 0;
 let isAutoSolving = false;
 let solutionActive = false;
 let moveHistorySnapshot = [];
+let isPreviewing = false;
 
 // Function to get the color of a sticker at a specific position
 function getStickerColor(cubelet, face) {
@@ -1071,16 +1072,19 @@ function showSolution() {
   if (result.solved) {
     stepsContainer.innerHTML = '<div class="solution-step">🎉 Cube is already solved!</div>';
     document.getElementById('nextStepBtn').disabled = true;
+    document.getElementById('previewAllBtn').disabled = true;
     document.getElementById('autoSolveBtn').disabled = true;
     solutionActive = false;
   } else if (result.needsManualSolve) {
     stepsContainer.innerHTML = `<div class="solution-step">${result.message}</div>`;
     document.getElementById('nextStepBtn').disabled = true;
+    document.getElementById('previewAllBtn').disabled = true;
     document.getElementById('autoSolveBtn').disabled = true;
     solutionActive = false;
   } else if (result.steps.length === 0) {
     stepsContainer.innerHTML = '<div class="solution-step">⚠️ No solution found. Try resetting the cube.</div>';
     document.getElementById('nextStepBtn').disabled = true;
+    document.getElementById('previewAllBtn').disabled = true;
     document.getElementById('autoSolveBtn').disabled = true;
     solutionActive = false;
   } else {
@@ -1090,6 +1094,7 @@ function showSolution() {
     moveHistorySnapshot = JSON.parse(JSON.stringify(moveHistory)); // Deep copy
     displaySolutionSteps();
     document.getElementById('nextStepBtn').disabled = false;
+    document.getElementById('previewAllBtn').disabled = false;
     document.getElementById('autoSolveBtn').disabled = false;
   }
   
@@ -1109,6 +1114,7 @@ function invalidateSolution() {
   stepsContainer.appendChild(warningDiv);
   
   document.getElementById('nextStepBtn').disabled = true;
+  document.getElementById('previewAllBtn').disabled = true;
   document.getElementById('autoSolveBtn').disabled = true;
   solutionActive = false;
   clearRotationIndicators();
@@ -1163,17 +1169,121 @@ function displaySolutionSteps() {
       `${step.description} (${step.count} times)` : 
       step.description;
     
+    // Add preview button for each step
+    const previewBtn = document.createElement('button');
+    previewBtn.className = 'preview-step-btn';
+    previewBtn.innerHTML = '👁️';
+    previewBtn.title = 'Preview this step';
+    previewBtn.onclick = (e) => {
+      e.stopPropagation();
+      previewStep(firstIndex);
+    };
+    
     stepDiv.innerHTML = `
       <span class="step-number">${firstIndex + 1}.</span>
       <span class="step-move">${notation}</span>
       <span>${description}</span>
     `;
     
+    stepDiv.appendChild(previewBtn);
     stepsContainer.appendChild(stepDiv);
   });
   
   // Update button states
   document.getElementById('nextStepBtn').disabled = currentStepIndex >= solutionSteps.length;
+}
+
+// Preview a single step without actually moving the cube
+function previewStep(stepIndex) {
+  if (isPreviewing || isRotating || !solutionActive) return;
+  
+  isPreviewing = true;
+  const step = solutionSteps[stepIndex];
+  
+  // Count consecutive same moves for display
+  let rotationCount = 1;
+  let tempIndex = stepIndex + 1;
+  while (tempIndex < solutionSteps.length && 
+         solutionSteps[tempIndex].move === step.move && 
+         solutionSteps[tempIndex].clockwise === step.clockwise) {
+    rotationCount++;
+    tempIndex++;
+  }
+  
+  // Show visual indicator without moving
+  showRotationIndicator(step.move, step.clockwise, rotationCount);
+  
+  // Clear after preview duration
+  setTimeout(() => {
+    clearRotationIndicators();
+    isPreviewing = false;
+  }, 2500);
+}
+
+// Preview all remaining steps in sequence
+function previewAllSteps() {
+  if (isPreviewing || isRotating || !solutionActive) return;
+  
+  isPreviewing = true;
+  
+  // Disable buttons during preview
+  document.getElementById('nextStepBtn').disabled = true;
+  document.getElementById('autoSolveBtn').disabled = true;
+  document.getElementById('previewAllBtn').disabled = true;
+  
+  let previewIndex = currentStepIndex;
+  
+  function showNextPreview() {
+    if (previewIndex >= solutionSteps.length) {
+      isPreviewing = false;
+      clearRotationIndicators();
+      
+      // Re-enable buttons
+      document.getElementById('nextStepBtn').disabled = currentStepIndex >= solutionSteps.length;
+      document.getElementById('autoSolveBtn').disabled = false;
+      document.getElementById('previewAllBtn').disabled = false;
+      return;
+    }
+    
+    const step = solutionSteps[previewIndex];
+    
+    // Count consecutive same moves
+    let rotationCount = 1;
+    let tempIndex = previewIndex + 1;
+    while (tempIndex < solutionSteps.length && 
+           solutionSteps[tempIndex].move === step.move && 
+           solutionSteps[tempIndex].clockwise === step.clockwise) {
+      rotationCount++;
+      tempIndex++;
+    }
+    
+    // Show indicator
+    showRotationIndicator(step.move, step.clockwise, rotationCount);
+    
+    // Highlight current step in list
+    const stepsContainer = document.getElementById('solutionSteps');
+    const stepDivs = stepsContainer.querySelectorAll('.solution-step');
+    stepDivs.forEach(div => div.classList.remove('previewing'));
+    
+    // Find and highlight the correct step div
+    for (let div of stepDivs) {
+      const stepNumberText = div.querySelector('.step-number').textContent;
+      const stepNum = parseInt(stepNumberText) - 1;
+      if (stepNum === previewIndex) {
+        div.classList.add('previewing');
+        break;
+      }
+    }
+    
+    // Move to next preview after delay
+    previewIndex++;
+    setTimeout(() => {
+      clearRotationIndicators();
+      setTimeout(showNextPreview, 300);
+    }, 1500);
+  }
+  
+  showNextPreview();
 }
 
 function executeNextStep() {
@@ -1297,6 +1407,7 @@ function autoSolve() {
 function closeSolutionPanel() {
   document.getElementById('solutionPanel').style.display = 'none';
   isAutoSolving = false;
+  isPreviewing = false;
   solutionSteps = [];
   currentStepIndex = 0;
   solutionActive = false;
@@ -1307,6 +1418,7 @@ function closeSolutionPanel() {
 // Event listeners for solution buttons
 document.getElementById('getSolutionBtn').addEventListener('click', showSolution);
 document.getElementById('nextStepBtn').addEventListener('click', executeNextStep);
+document.getElementById('previewAllBtn').addEventListener('click', previewAllSteps);
 document.getElementById('autoSolveBtn').addEventListener('click', autoSolve);
 document.getElementById('closeSolutionBtn').addEventListener('click', closeSolutionPanel);
 
