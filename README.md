@@ -12,7 +12,11 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
 - **Smooth Animations**: 300ms smooth rotation animations with proper quaternion-based transforms
 - **Standard Color Scheme**: Red, Orange, White, Yellow, Green, Blue
 - **Full Controls**: Rotate any face clockwise or counter-clockwise
+- **Color Picker Tool**: Select colors and click on cube faces to customize them
+- **Move Tracking**: Displays move counter and enables solve functionality
 - **Scramble Function**: Randomize the cube with 20 moves
+- **Solve Function**: Automatically reverse all moves to return to the solved state
+- **Reset Function**: Smoothly restore cube to its initial state
 - **Interactive Camera**: Drag with mouse or use arrow keys to rotate the view
 - **Beautiful UI**: Modern, polished interface with glowing accents
 
@@ -30,6 +34,11 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
 - **Mouse Drag** - Rotate camera view
 - **Arrow Keys** - Rotate camera view
 - **S** - Scramble cube
+
+### Color Picker
+- **Click Color** - Select a color from the picker (bottom left)
+- **Click Face** - Click on any cube sticker to change its color
+- All 6 standard Rubik's cube colors available (Red, Orange, White, Yellow, Green, Blue)
 
 ## 🚀 Getting Started
 
@@ -53,6 +62,8 @@ No build process, no dependencies to install. Just open and play!
 - **Quaternion Rotations**: Smooth, gimbal-lock-free rotations
 - **Realistic Materials**: Phong materials with proper lighting and shadows
 - **Modular Design**: Each cubelet is constructed with a black body and colored stickers
+- **Raycasting**: Click detection for interactive color changing
+- **Move History**: Tracks all rotations for undo/solve functionality
 
 ## 🎨 Design
 
@@ -61,6 +72,8 @@ The cube features:
 - Colored stickers with subtle borders and beveling
 - Multiple light sources for realistic depth and shadows
 - Rim lighting for a professional look
+- Interactive color picker with hover effects and selection indicators
+- Modern glassmorphism UI panels with backdrop blur effects
 
 ## 📝 License
 
@@ -69,20 +82,24 @@ MIT License - Feel free to use this project however you'd like!
 ## 🤝 Contributing
 
 Pull requests are welcome! Feel free to:
-- Add new features (timer, move counter, solve algorithm hints)
+- Add new features (timer, advanced solve algorithms, pattern generators)
 - Improve the UI/UX
 - Optimize performance
 - Fix bugs
 
 ## 🎯 Future Ideas
 
-- [ ] Move counter
+- [x] Move counter ✓
+- [x] Color picker for customization ✓
+- [x] Solve function ✓
 - [ ] Timer for speedsolving
-- [ ] Solve algorithm hints
+- [ ] Advanced solve algorithm (Kociemba, CFOP hints)
 - [ ] Save/load cube state
+- [ ] Pattern generator (checkerboard, stripes, etc.)
 - [ ] Different cube sizes (2x2, 4x4, 5x5)
 - [ ] Touch controls for mobile
 - [ ] Keyboard shortcut customization
+- [ ] Animation speed control
 
 ---
 
