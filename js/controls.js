@@ -28,31 +28,9 @@ export function setupKeyboardControls(rotateLayerFn, scrambleFn) {
     if (key === 'f') rotateLayerFn('F', clockwise);
     if (key === 'b') rotateLayerFn('B', clockwise);
     
-    // Numpad controls - position-based intuitive mapping
-    // The numpad position matches the layer position on the cube:
-    // 7 8 9 = Top-Left, Top-Center, Top-Right
-    // 4 5 6 = Middle-Left, Front, Middle-Right  
-    // 1 2 3 = Bottom-Left, Bottom-Center, Bottom-Right
-    // 0 = Back face
-    
-    // Top row - rotates respective vertical slices upward
-    if (e.key === '7' || e.key === 'NumPad7') rotateLayerFn('L', clockwise);  // Left up
-    if (e.key === '8' || e.key === 'NumPad8') rotateLayerFn('F', clockwise);  // Front up (toward you)
-    if (e.key === '9' || e.key === 'NumPad9') rotateLayerFn('R', clockwise);  // Right up
-    
-    // Middle row - rotates horizontal layers
-    if (e.key === '4' || e.key === 'NumPad4') rotateLayerFn('U', !clockwise); // Top layer left
-    if (e.key === '5' || e.key === 'NumPad5') rotateLayerFn('F', clockwise);  // Front (center)
-    if (e.key === '6' || e.key === 'NumPad6') rotateLayerFn('U', clockwise);  // Top layer right
-    
-    // Bottom row - rotates respective vertical slices downward
-    if (e.key === '1' || e.key === 'NumPad1') rotateLayerFn('L', !clockwise); // Left down
-    if (e.key === '2' || e.key === 'NumPad2') rotateLayerFn('F', !clockwise); // Front down (away from you)
-    if (e.key === '3' || e.key === 'NumPad3') rotateLayerFn('R', !clockwise); // Right down
-    
-    // Special keys
-    if (e.key === '0' || e.key === 'NumPad0') rotateLayerFn('B', clockwise);  // Back face
-    if (e.key === '.' || e.key === 'NumPadDecimal') rotateLayerFn('D', clockwise); // Bottom face
+    // Middle slices
+    if (key === 'm') rotateLayerFn('M', clockwise);
+    if (key === 'e') rotateLayerFn('E', clockwise);
     
     // Scramble
     if (key === 's') scrambleFn();

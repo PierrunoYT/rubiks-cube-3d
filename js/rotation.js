@@ -42,6 +42,10 @@ export function rotateLayer(face, clockwise = true, recordMove = true, state) {
       cubeletsToRotate = State.cubelets.filter(c => Math.abs(c.position.x + 1) < 0.1);
       axis = 'x';
       break;
+    case 'M': // Middle vertical slice (x = 0) - rotates like L
+      cubeletsToRotate = State.cubelets.filter(c => Math.abs(c.position.x) < 0.1);
+      axis = 'x';
+      break;
     case 'U': // Up face (y = 1)
       cubeletsToRotate = State.cubelets.filter(c => Math.abs(c.position.y - 1) < 0.1);
       axis = 'y';
@@ -50,12 +54,20 @@ export function rotateLayer(face, clockwise = true, recordMove = true, state) {
       cubeletsToRotate = State.cubelets.filter(c => Math.abs(c.position.y + 1) < 0.1);
       axis = 'y';
       break;
+    case 'E': // Equator slice (y = 0) - rotates like D
+      cubeletsToRotate = State.cubelets.filter(c => Math.abs(c.position.y) < 0.1);
+      axis = 'y';
+      break;
     case 'F': // Front face (z = 1)
       cubeletsToRotate = State.cubelets.filter(c => Math.abs(c.position.z - 1) < 0.1);
       axis = 'z';
       break;
     case 'B': // Back face (z = -1)
       cubeletsToRotate = State.cubelets.filter(c => Math.abs(c.position.z + 1) < 0.1);
+      axis = 'z';
+      break;
+    case 'S': // Standing slice (z = 0) - rotates like F
+      cubeletsToRotate = State.cubelets.filter(c => Math.abs(c.position.z) < 0.1);
       axis = 'z';
       break;
   }
