@@ -1193,7 +1193,7 @@ function displaySolutionSteps() {
   document.getElementById('nextStepBtn').disabled = currentStepIndex >= solutionSteps.length;
 }
 
-// Preview a single step without actually moving the cube
+// Preview a single step by moving and then reversing
 function previewStep(stepIndex) {
   if (isPreviewing || isRotating || !solutionActive) return;
   
@@ -1210,17 +1210,30 @@ function previewStep(stepIndex) {
     tempIndex++;
   }
   
-  // Show visual indicator without moving
+  // Show visual indicator
   showRotationIndicator(step.move, step.clockwise, rotationCount);
   
-  // Clear after preview duration
+  // Wait a bit for indicator visibility
   setTimeout(() => {
-    clearRotationIndicators();
-    isPreviewing = false;
-  }, 2500);
+    // Perform the rotation
+    rotateLayer(step.move, step.clockwise, false);
+    
+    // Wait for rotation to complete, then reverse it
+    setTimeout(() => {
+      clearRotationIndicators();
+      
+      // Reverse the rotation (move back)
+      rotateLayer(step.move, !step.clockwise, false);
+      
+      // Clear everything after reverse completes
+      setTimeout(() => {
+        isPreviewing = false;
+      }, 350);
+    }, 350);
+  }, 1000);
 }
 
-// Preview all remaining steps in sequence
+// Preview all remaining steps in sequence with actual movements
 function previewAllSteps() {
   if (isPreviewing || isRotating || !solutionActive) return;
   
@@ -1238,10 +1251,21 @@ function previewAllSteps() {
       isPreviewing = false;
       clearRotationIndicators();
       
+      // Remove highlighting
+      const stepsContainer = document.getElementById('solutionSteps');
+      const stepDivs = stepsContainer.querySelectorAll('.solution-step');
+      stepDivs.forEach(div => div.classList.remove('previewing'));
+      
       // Re-enable buttons
       document.getElementById('nextStepBtn').disabled = currentStepIndex >= solutionSteps.length;
       document.getElementById('autoSolveBtn').disabled = false;
       document.getElementById('previewAllBtn').disabled = false;
+      return;
+    }
+    
+    // Wait for any rotation to complete
+    if (isRotating) {
+      setTimeout(showNextPreview, 50);
       return;
     }
     
@@ -1275,12 +1299,24 @@ function previewAllSteps() {
       }
     }
     
-    // Move to next preview after delay
-    previewIndex++;
+    // Perform the rotation after showing indicator
     setTimeout(() => {
-      clearRotationIndicators();
-      setTimeout(showNextPreview, 300);
-    }, 1500);
+      rotateLayer(step.move, step.clockwise, false);
+      
+      // Wait for rotation to complete, then reverse it
+      setTimeout(() => {
+        clearRotationIndicators();
+        
+        // Reverse the rotation
+        rotateLayer(step.move, !step.clockwise, false);
+        
+        // Move to next preview after reverse completes
+        setTimeout(() => {
+          previewIndex++;
+          showNextPreview();
+        }, 350);
+      }, 350);
+    }, 800);
   }
   
   showNextPreview();
