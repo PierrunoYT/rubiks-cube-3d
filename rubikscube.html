@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Rubik's Cube</title>
   <link rel="stylesheet" href="rubikscube.css">
 </head>
@@ -17,7 +19,7 @@
     <p><kbd>B</kbd> / <kbd>Shift+B</kbd> - Back face</p>
     <p><kbd>Arrow Keys</kbd> - Rotate view</p>
     <p><kbd>Mouse Drag</kbd> - Rotate view</p>
-    <p><kbd>Shift + Click & Drag</kbd> - Rotate layer</p>
+    <p style="text-decoration: line-through; opacity: 0.5;"><kbd>Shift + Click & Drag</kbd> - Rotate layer <span style="color: #ff6b6b; font-weight: bold; text-decoration: none;">⚠️ Broken</span></p>
     <p><kbd>S</kbd> - Scramble cube</p>
     <button id="toggleLabelsBtn" style="margin-top: 10px;">👁️ Toggle Labels</button>
   </div>
@@ -64,7 +66,7 @@
   </div>
 
   <div id="info">
-    Drag to rotate • Hold Shift + Drag layer to turn
+    Drag to rotate • <span style="text-decoration: line-through; opacity: 0.5;">Hold Shift + Drag layer to turn</span> <span style="color: #ff6b6b; font-weight: bold;">⚠️ Currently Broken</span>
   </div>
 
   <div id="actions">
