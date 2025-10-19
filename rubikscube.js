@@ -67,6 +67,169 @@ function toggleLabels() {
   });
 }
 
+// ===== VISUAL ROTATION INDICATORS =====
+let rotationIndicators = [];
+
+function createRotationArrow(face, clockwise) {
+  const group = new THREE.Group();
+  
+  // Create arrow shape for rotation indicator
+  const arrowShape = new THREE.Shape();
+  const radius = 0.7;
+  const arrowSize = 0.2;
+  
+  // Draw curved arrow
+  for (let i = 0; i <= 20; i++) {
+    const angle = (i / 20) * Math.PI * 1.5 * (clockwise ? 1 : -1);
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    if (i === 0) arrowShape.moveTo(x, y);
+    else arrowShape.lineTo(x, y);
+  }
+  
+  // Create multiple arrows around the face
+  const material = new THREE.MeshBasicMaterial({ 
+    color: 0x4ecdc4,
+    transparent: true,
+    opacity: 0.8,
+    side: THREE.DoubleSide
+  });
+  
+  // Create arrow head using a cone
+  const coneGeometry = new THREE.ConeGeometry(0.15, 0.3, 8);
+  const cone1 = new THREE.Mesh(coneGeometry, material);
+  const cone2 = new THREE.Mesh(coneGeometry, material);
+  const cone3 = new THREE.Mesh(coneGeometry, material);
+  const cone4 = new THREE.Mesh(coneGeometry, material);
+  
+  // Position arrows based on face
+  let position, rotation1, rotation2, rotation3, rotation4;
+  const offset = 1.1;
+  
+  switch(face) {
+    case 'R':
+      position = new THREE.Vector3(offset, 0, 0);
+      rotation1 = [0, 0, clockwise ? Math.PI/2 : -Math.PI/2];
+      cone1.position.set(0, 0.7, 0.7);
+      cone2.position.set(0, 0.7, -0.7);
+      cone3.position.set(0, -0.7, 0.7);
+      cone4.position.set(0, -0.7, -0.7);
+      cone1.rotation.set(0, clockwise ? Math.PI : 0, clockwise ? Math.PI/4 : -Math.PI/4);
+      cone2.rotation.set(0, clockwise ? Math.PI : 0, clockwise ? -Math.PI/4 : Math.PI/4);
+      cone3.rotation.set(0, clockwise ? 0 : Math.PI, clockwise ? Math.PI/4 : -Math.PI/4);
+      cone4.rotation.set(0, clockwise ? 0 : Math.PI, clockwise ? -Math.PI/4 : Math.PI/4);
+      break;
+    case 'L':
+      position = new THREE.Vector3(-offset, 0, 0);
+      cone1.position.set(0, 0.7, 0.7);
+      cone2.position.set(0, 0.7, -0.7);
+      cone3.position.set(0, -0.7, 0.7);
+      cone4.position.set(0, -0.7, -0.7);
+      cone1.rotation.set(0, clockwise ? 0 : Math.PI, clockwise ? Math.PI/4 : -Math.PI/4);
+      cone2.rotation.set(0, clockwise ? 0 : Math.PI, clockwise ? -Math.PI/4 : Math.PI/4);
+      cone3.rotation.set(0, clockwise ? Math.PI : 0, clockwise ? Math.PI/4 : -Math.PI/4);
+      cone4.rotation.set(0, clockwise ? Math.PI : 0, clockwise ? -Math.PI/4 : Math.PI/4);
+      break;
+    case 'U':
+      position = new THREE.Vector3(0, offset, 0);
+      cone1.position.set(0.7, 0, 0.7);
+      cone2.position.set(0.7, 0, -0.7);
+      cone3.position.set(-0.7, 0, 0.7);
+      cone4.position.set(-0.7, 0, -0.7);
+      cone1.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, 0, clockwise ? Math.PI/2 : -Math.PI/2);
+      cone2.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, 0, clockwise ? Math.PI/2 : -Math.PI/2);
+      cone3.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, 0, clockwise ? -Math.PI/2 : Math.PI/2);
+      cone4.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, 0, clockwise ? -Math.PI/2 : Math.PI/2);
+      break;
+    case 'D':
+      position = new THREE.Vector3(0, -offset, 0);
+      cone1.position.set(0.7, 0, 0.7);
+      cone2.position.set(0.7, 0, -0.7);
+      cone3.position.set(-0.7, 0, 0.7);
+      cone4.position.set(-0.7, 0, -0.7);
+      cone1.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, 0, clockwise ? Math.PI/2 : -Math.PI/2);
+      cone2.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, 0, clockwise ? Math.PI/2 : -Math.PI/2);
+      cone3.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, 0, clockwise ? -Math.PI/2 : Math.PI/2);
+      cone4.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, 0, clockwise ? -Math.PI/2 : Math.PI/2);
+      break;
+    case 'F':
+      position = new THREE.Vector3(0, 0, offset);
+      cone1.position.set(0.7, 0.7, 0);
+      cone2.position.set(0.7, -0.7, 0);
+      cone3.position.set(-0.7, 0.7, 0);
+      cone4.position.set(-0.7, -0.7, 0);
+      cone1.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, clockwise ? -Math.PI/2 : Math.PI/2, 0);
+      cone2.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, clockwise ? -Math.PI/2 : Math.PI/2, 0);
+      cone3.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, clockwise ? Math.PI/2 : -Math.PI/2, 0);
+      cone4.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, clockwise ? Math.PI/2 : -Math.PI/2, 0);
+      break;
+    case 'B':
+      position = new THREE.Vector3(0, 0, -offset);
+      cone1.position.set(0.7, 0.7, 0);
+      cone2.position.set(0.7, -0.7, 0);
+      cone3.position.set(-0.7, 0.7, 0);
+      cone4.position.set(-0.7, -0.7, 0);
+      cone1.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, clockwise ? -Math.PI/2 : Math.PI/2, 0);
+      cone2.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, clockwise ? -Math.PI/2 : Math.PI/2, 0);
+      cone3.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, clockwise ? Math.PI/2 : -Math.PI/2, 0);
+      cone4.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, clockwise ? Math.PI/2 : -Math.PI/2, 0);
+      break;
+  }
+  
+  group.add(cone1, cone2, cone3, cone4);
+  group.position.copy(position);
+  
+  return group;
+}
+
+function showRotationIndicator(face, clockwise) {
+  // Remove existing indicators
+  clearRotationIndicators();
+  
+  // Create new indicator
+  const indicator = createRotationArrow(face, clockwise);
+  scene.add(indicator);
+  rotationIndicators.push(indicator);
+  
+  // Animate the indicator (pulsing effect)
+  let startTime = Date.now();
+  const animateDuration = 2000;
+  
+  function animateIndicator() {
+    if (rotationIndicators.indexOf(indicator) === -1) return; // Indicator was removed
+    
+    const elapsed = Date.now() - startTime;
+    const progress = (elapsed % 800) / 800;
+    const scale = 1 + Math.sin(progress * Math.PI * 2) * 0.15;
+    
+    indicator.scale.set(scale, scale, scale);
+    
+    // Update opacity with pulse
+    indicator.children.forEach(child => {
+      if (child.material) {
+        child.material.opacity = 0.6 + Math.sin(progress * Math.PI * 2) * 0.2;
+      }
+    });
+    
+    if (elapsed < animateDuration) {
+      requestAnimationFrame(animateIndicator);
+    }
+  }
+  
+  animateIndicator();
+}
+
+function clearRotationIndicators() {
+  rotationIndicators.forEach(indicator => {
+    scene.remove(indicator);
+    indicator.children.forEach(child => {
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) child.material.dispose();
+    });
+  });
+  rotationIndicators = [];
+}
+
 // Add a ground plane that stays horizontal
 const groundGeometry = new THREE.PlaneGeometry(50, 50);
 const groundMaterial = new THREE.MeshPhongMaterial({ 
@@ -802,7 +965,19 @@ function executeNextStep() {
   if (currentStepIndex >= solutionSteps.length || isRotating) return;
   
   const step = solutionSteps[currentStepIndex];
-  rotateLayer(step.move, step.clockwise, false);
+  
+  // Show visual indicator on the cube
+  showRotationIndicator(step.move, step.clockwise);
+  
+  // Execute the move after a short delay so user can see the indicator
+  setTimeout(() => {
+    rotateLayer(step.move, step.clockwise, false);
+    
+    // Clear indicator after move completes
+    setTimeout(() => {
+      clearRotationIndicators();
+    }, 350);
+  }, 1500);
   
   currentStepIndex++;
   displaySolutionSteps();
@@ -836,6 +1011,7 @@ function autoSolve() {
     if (currentStepIndex >= solutionSteps.length) {
       isAutoSolving = false;
       document.getElementById('autoSolveBtn').disabled = true;
+      clearRotationIndicators();
       
       // Reset move tracking since cube is now solved
       moveHistory = [];
@@ -860,11 +1036,22 @@ function autoSolve() {
     }
     
     const step = solutionSteps[currentStepIndex];
-    rotateLayer(step.move, step.clockwise, false);
-    currentStepIndex++;
-    displaySolutionSteps();
     
-    setTimeout(executeStep, 350);
+    // Show visual indicator
+    showRotationIndicator(step.move, step.clockwise);
+    
+    // Wait briefly for indicator visibility, then rotate
+    setTimeout(() => {
+      rotateLayer(step.move, step.clockwise, false);
+      currentStepIndex++;
+      displaySolutionSteps();
+      
+      // Clear indicator and move to next step
+      setTimeout(() => {
+        clearRotationIndicators();
+        executeStep();
+      }, 350);
+    }, 800);
   }
   
   executeStep();
@@ -875,6 +1062,7 @@ function closeSolutionPanel() {
   isAutoSolving = false;
   solutionSteps = [];
   currentStepIndex = 0;
+  clearRotationIndicators();
 }
 
 // Event listeners for solution buttons

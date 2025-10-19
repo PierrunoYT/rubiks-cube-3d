@@ -17,6 +17,7 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
 - **Color Picker Tool**: Select colors and click on cube faces to customize them
 - **Solution Finder**: Get step-by-step instructions to solve the cube
   - Shows each move in standard notation (R, L', U, etc.)
+  - **Visual indicators** show which layer to turn and in which direction with animated arrows
   - Execute moves one at a time or auto-solve
   - Works with scrambled and manually manipulated cubes
 - **Move Tracking**: Displays move counter and enables solve functionality
@@ -49,7 +50,10 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
 ### Solution Finder
 - **Get Solution Button** - Click to analyze the cube and get solving steps
 - **Next Step** - Execute one move at a time with visual guidance
-- **Auto Solve** - Automatically execute all remaining steps
+  - Animated cyan arrows appear on the cube showing exactly which face to turn and in which direction
+  - Arrows pulse to draw your attention
+  - Perfect for learning how to solve the cube manually
+- **Auto Solve** - Automatically execute all remaining steps with visual indicators
 - Shows moves in standard Rubik's cube notation (R, L', U2, etc.)
 
 ## 🚀 Getting Started
