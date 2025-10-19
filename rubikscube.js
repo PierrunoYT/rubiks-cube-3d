@@ -422,6 +422,11 @@ function rotateLayer(face, clockwise = true, recordMove = true) {
       moveCount++;
       updateMoveCounter();
       updateButtonStates(false); // Enable solve button after manual move
+      
+      // Check if solution is active and invalidate it if manual move detected
+      if (solutionActive && !isAutoSolving) {
+        invalidateSolution();
+      }
     }
   }
 
@@ -796,6 +801,8 @@ renderer.domElement.addEventListener('click', (event) => {
 let solutionSteps = [];
 let currentStepIndex = 0;
 let isAutoSolving = false;
+let solutionActive = false;
+let moveHistorySnapshot = [];
 
 // Function to get the color of a sticker at a specific position
 function getStickerColor(cubelet, face) {
@@ -915,23 +922,46 @@ function showSolution() {
     stepsContainer.innerHTML = '<div class="solution-step">🎉 Cube is already solved!</div>';
     document.getElementById('nextStepBtn').disabled = true;
     document.getElementById('autoSolveBtn').disabled = true;
+    solutionActive = false;
   } else if (result.needsManualSolve) {
     stepsContainer.innerHTML = `<div class="solution-step">${result.message}</div>`;
     document.getElementById('nextStepBtn').disabled = true;
     document.getElementById('autoSolveBtn').disabled = true;
+    solutionActive = false;
   } else if (result.steps.length === 0) {
     stepsContainer.innerHTML = '<div class="solution-step">⚠️ No solution found. Try resetting the cube.</div>';
     document.getElementById('nextStepBtn').disabled = true;
     document.getElementById('autoSolveBtn').disabled = true;
+    solutionActive = false;
   } else {
     solutionSteps = result.steps;
     currentStepIndex = 0;
+    solutionActive = true;
+    moveHistorySnapshot = JSON.parse(JSON.stringify(moveHistory)); // Deep copy
     displaySolutionSteps();
     document.getElementById('nextStepBtn').disabled = false;
     document.getElementById('autoSolveBtn').disabled = false;
   }
   
   panel.style.display = 'block';
+}
+
+function invalidateSolution() {
+  if (!solutionActive) return;
+  
+  const stepsContainer = document.getElementById('solutionSteps');
+  const warningDiv = document.createElement('div');
+  warningDiv.className = 'solution-step';
+  warningDiv.style.background = 'rgba(255, 100, 100, 0.3)';
+  warningDiv.style.borderLeftColor = '#ff6464';
+  warningDiv.innerHTML = '⚠️ Cube state changed! Solution is no longer valid. Click "Get Solution" again to recalculate.';
+  stepsContainer.innerHTML = '';
+  stepsContainer.appendChild(warningDiv);
+  
+  document.getElementById('nextStepBtn').disabled = true;
+  document.getElementById('autoSolveBtn').disabled = true;
+  solutionActive = false;
+  clearRotationIndicators();
 }
 
 function displaySolutionSteps() {
@@ -962,7 +992,7 @@ function displaySolutionSteps() {
 }
 
 function executeNextStep() {
-  if (currentStepIndex >= solutionSteps.length || isRotating) return;
+  if (currentStepIndex >= solutionSteps.length || isRotating || !solutionActive) return;
   
   const step = solutionSteps[currentStepIndex];
   
@@ -988,6 +1018,7 @@ function executeNextStep() {
     moveCount = 0;
     updateMoveCounter();
     updateButtonStates(false);
+    solutionActive = false;
     
     setTimeout(() => {
       const stepsContainer = document.getElementById('solutionSteps');
@@ -1001,7 +1032,7 @@ function executeNextStep() {
 }
 
 function autoSolve() {
-  if (isAutoSolving || currentStepIndex >= solutionSteps.length) return;
+  if (isAutoSolving || currentStepIndex >= solutionSteps.length || !solutionActive) return;
   
   isAutoSolving = true;
   document.getElementById('autoSolveBtn').disabled = true;
@@ -1012,6 +1043,7 @@ function autoSolve() {
       isAutoSolving = false;
       document.getElementById('autoSolveBtn').disabled = true;
       clearRotationIndicators();
+      solutionActive = false;
       
       // Reset move tracking since cube is now solved
       moveHistory = [];
@@ -1062,6 +1094,8 @@ function closeSolutionPanel() {
   isAutoSolving = false;
   solutionSteps = [];
   currentStepIndex = 0;
+  solutionActive = false;
+  moveHistorySnapshot = [];
   clearRotationIndicators();
 }
 
