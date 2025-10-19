@@ -73,6 +73,67 @@
       border: 1px solid rgba(78, 205, 196, 0.2);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
+
+    #actions {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    #actions button {
+      background: linear-gradient(145deg, #2a2a3a, #1a1a2a);
+      color: #4ecdc4;
+      border: 1px solid rgba(78, 205, 196, 0.3);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #actions button:hover {
+      background: linear-gradient(145deg, #3a3a4a, #2a2a3a);
+      border-color: rgba(78, 205, 196, 0.6);
+      box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+      transform: translateY(-2px);
+    }
+
+    #actions button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    #actions button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #moveCounter {
+      background: rgba(10, 10, 20, 0.85);
+      color: white;
+      border: 1px solid rgba(78, 205, 196, 0.2);
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    #moveCounter span {
+      color: #4ecdc4;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -93,6 +154,13 @@
 
   <div id="info">
     Drag to rotate • Arrow keys to turn view
+  </div>
+
+  <div id="actions">
+    <button id="scrambleBtn">🎲 Scramble</button>
+    <button id="solveBtn">✨ Solve</button>
+    <button id="resetBtn">🔄 Reset</button>
+    <div id="moveCounter">Moves: <span id="moveCount">0</span></div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -257,10 +325,25 @@
     let lastMouseX = 0;
     let lastMouseY = 0;
 
+    // ===== MOVE TRACKING =====
+    let moveHistory = [];
+    let moveCount = 0;
+    let isSolving = false;
+    let isScrambling = false;
+
     // ===== LAYER ROTATION FUNCTION =====
-    function rotateLayer(face, clockwise = true) {
+    function rotateLayer(face, clockwise = true, recordMove = true) {
       if (isRotating) return;
       isRotating = true;
+
+      // Track move in history (unless we're solving or it's marked not to record)
+      if (recordMove && !isSolving) {
+        moveHistory.push({ face, clockwise });
+        if (!isScrambling) {
+          moveCount++;
+          updateMoveCounter();
+        }
+      }
 
       const angle = clockwise ? Math.PI / 2 : -Math.PI / 2;
       const duration = 300;
@@ -350,14 +433,22 @@
 
     // ===== SCRAMBLE FUNCTION =====
     function scrambleCube() {
-      if (isRotating) return;
+      if (isRotating || isSolving) return;
       
+      isScrambling = true;
       const faces = ['R', 'L', 'U', 'D', 'F', 'B'];
       const moves = 20;
       let count = 0;
 
+      // Disable buttons during scramble
+      updateButtonStates(true);
+
       function doMove() {
-        if (count >= moves) return;
+        if (count >= moves) {
+          isScrambling = false;
+          updateButtonStates(false);
+          return;
+        }
         
         // Wait until previous rotation is complete
         if (isRotating) {
@@ -374,6 +465,72 @@
       }
 
       doMove();
+    }
+
+    // ===== SOLVE FUNCTION =====
+    function solveCube() {
+      if (isRotating || isSolving || moveHistory.length === 0) return;
+      
+      isSolving = true;
+      updateButtonStates(true);
+
+      // Reverse the move history
+      const reversedMoves = [...moveHistory].reverse();
+      let index = 0;
+
+      function doMove() {
+        if (index >= reversedMoves.length) {
+          isSolving = false;
+          moveHistory = [];
+          moveCount = 0;
+          updateMoveCounter();
+          updateButtonStates(false);
+          return;
+        }
+        
+        // Wait until previous rotation is complete
+        if (isRotating) {
+          setTimeout(doMove, 50);
+          return;
+        }
+        
+        const move = reversedMoves[index];
+        // Reverse the direction of the move
+        rotateLayer(move.face, !move.clockwise, false);
+        
+        index++;
+        setTimeout(doMove, 320);
+      }
+
+      doMove();
+    }
+
+    // ===== RESET FUNCTION =====
+    function resetCube() {
+      if (isRotating || isSolving || isScrambling) return;
+      
+      moveHistory = [];
+      moveCount = 0;
+      updateMoveCounter();
+      
+      // If cube is solved, just clear history
+      // For a full reset, we'd need to track the solved state
+      alert('Move history cleared! Use Solve to return to original state.');
+    }
+
+    // ===== UPDATE MOVE COUNTER =====
+    function updateMoveCounter() {
+      const counterElement = document.getElementById('moveCount');
+      if (counterElement) {
+        counterElement.textContent = moveCount;
+      }
+    }
+
+    // ===== UPDATE BUTTON STATES =====
+    function updateButtonStates(disabled) {
+      document.getElementById('scrambleBtn').disabled = disabled;
+      document.getElementById('solveBtn').disabled = disabled || moveHistory.length === 0;
+      document.getElementById('resetBtn').disabled = disabled;
     }
 
     // ===== KEYBOARD CONTROLS =====
@@ -429,6 +586,14 @@
     document.addEventListener('mouseup', () => {
       mouseDown = false;
     });
+
+    // ===== BUTTON EVENT LISTENERS =====
+    document.getElementById('scrambleBtn').addEventListener('click', scrambleCube);
+    document.getElementById('solveBtn').addEventListener('click', solveCube);
+    document.getElementById('resetBtn').addEventListener('click', resetCube);
+
+    // Initialize button states
+    updateButtonStates(false);
 
     // ===== WINDOW RESIZE =====
     window.addEventListener('resize', () => {
