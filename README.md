@@ -13,6 +13,10 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
 - **Standard Color Scheme**: Red, Orange, White, Yellow, Green, Blue
 - **Full Controls**: Rotate any face clockwise or counter-clockwise
 - **Color Picker Tool**: Select colors and click on cube faces to customize them
+- **Solution Finder**: Get step-by-step instructions to solve the cube
+  - Shows each move in standard notation (R, L', U, etc.)
+  - Execute moves one at a time or auto-solve
+  - Works with scrambled and manually manipulated cubes
 - **Move Tracking**: Displays move counter and enables solve functionality
 - **Scramble Function**: Randomize the cube with 20 moves
 - **Solve Function**: Automatically reverse all moves to return to the solved state
@@ -39,6 +43,12 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
 - **Click Color** - Select a color from the picker (bottom left)
 - **Click Face** - Click on any cube sticker to change its color
 - All 6 standard Rubik's cube colors available (Red, Orange, White, Yellow, Green, Blue)
+
+### Solution Finder
+- **Get Solution Button** - Click to analyze the cube and get solving steps
+- **Next Step** - Execute one move at a time with visual guidance
+- **Auto Solve** - Automatically execute all remaining steps
+- Shows moves in standard Rubik's cube notation (R, L', U2, etc.)
 
 ## 🚀 Getting Started
 
@@ -92,14 +102,16 @@ Pull requests are welcome! Feel free to:
 - [x] Move counter ✓
 - [x] Color picker for customization ✓
 - [x] Solve function ✓
+- [x] Solution step-by-step guide ✓
 - [ ] Timer for speedsolving
-- [ ] Advanced solve algorithm (Kociemba, CFOP hints)
+- [ ] Advanced solve algorithm for custom states (Kociemba, CFOP hints)
 - [ ] Save/load cube state
 - [ ] Pattern generator (checkerboard, stripes, etc.)
 - [ ] Different cube sizes (2x2, 4x4, 5x5)
 - [ ] Touch controls for mobile
 - [ ] Keyboard shortcut customization
 - [ ] Animation speed control
+- [ ] Solution optimization (fewer moves)
 
 ---
 

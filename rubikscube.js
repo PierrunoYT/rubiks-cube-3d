@@ -455,6 +455,7 @@ function updateButtonStates(disabled) {
   document.getElementById('scrambleBtn').disabled = disabled;
   document.getElementById('solveBtn').disabled = disabled || moveHistory.length === 0;
   document.getElementById('resetBtn').disabled = disabled;
+  document.getElementById('getSolutionBtn').disabled = disabled;
 }
 
 // ===== KEYBOARD CONTROLS =====
@@ -573,6 +574,260 @@ renderer.domElement.addEventListener('click', (event) => {
     }
   }
 });
+
+// ===== SOLUTION FINDER =====
+let solutionSteps = [];
+let currentStepIndex = 0;
+let isAutoSolving = false;
+
+// Function to get the color of a sticker at a specific position
+function getStickerColor(cubelet, face) {
+  const children = cubelet.children;
+  for (let child of children) {
+    if (child.geometry && child.geometry.type === 'BoxGeometry') {
+      const params = child.geometry.parameters;
+      // Check if it's a sticker (small depth)
+      if (params.depth < 0.1) {
+        // Get the sticker's world position
+        const worldPos = new THREE.Vector3();
+        child.getWorldPosition(worldPos);
+        
+        // Determine which face this sticker is on based on position
+        const tolerance = 0.3;
+        let stickerFace = null;
+        
+        if (Math.abs(worldPos.x - 1) < tolerance) stickerFace = 'R';
+        else if (Math.abs(worldPos.x + 1) < tolerance) stickerFace = 'L';
+        else if (Math.abs(worldPos.y - 1) < tolerance) stickerFace = 'U';
+        else if (Math.abs(worldPos.y + 1) < tolerance) stickerFace = 'D';
+        else if (Math.abs(worldPos.z - 1) < tolerance) stickerFace = 'F';
+        else if (Math.abs(worldPos.z + 1) < tolerance) stickerFace = 'B';
+        
+        if (stickerFace === face && child.material && child.material.color) {
+          return child.material.color.getHex();
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// Function to check if cube is in solved state
+function isCubeSolved() {
+  const faces = ['R', 'L', 'U', 'D', 'F', 'B'];
+  
+  for (let face of faces) {
+    const colors = [];
+    for (let cubelet of cubelets) {
+      const color = getStickerColor(cubelet, face);
+      if (color !== null) {
+        colors.push(color);
+      }
+    }
+    
+    // Check if all colors on this face are the same
+    if (colors.length > 0) {
+      const firstColor = colors[0];
+      for (let color of colors) {
+        if (color !== firstColor) {
+          return false;
+        }
+      }
+    }
+  }
+  
+  return true;
+}
+
+// Simple solving algorithm - finds moves to solve the cube
+function findSolution() {
+  // Check if already solved
+  if (isCubeSolved()) {
+    return { solved: true, steps: [] };
+  }
+  
+  // If we have move history, use reverse moves (like the solve button)
+  if (moveHistory.length > 0) {
+    const steps = [];
+    const reversedMoves = [...moveHistory].reverse();
+    
+    for (let move of reversedMoves) {
+      const notation = move.clockwise ? move.face + "'" : move.face;
+      steps.push({
+        move: move.face,
+        clockwise: !move.clockwise,
+        notation: notation,
+        description: getMoveDescription(move.face, !move.clockwise)
+      });
+    }
+    
+    return { solved: false, steps: steps };
+  }
+  
+  // For manually created states (using color picker), try to find a solution
+  // This is a simplified approach - a real solver would use algorithms like Kociemba
+  return { 
+    solved: false, 
+    steps: [],
+    needsManualSolve: true,
+    message: "Cube was modified with color picker. Try using Reset to return to solved state, or manually solve using standard Rubik's cube methods."
+  };
+}
+
+function getMoveDescription(face, clockwise) {
+  const faceNames = {
+    'R': 'Right',
+    'L': 'Left',
+    'U': 'Top',
+    'D': 'Bottom',
+    'F': 'Front',
+    'B': 'Back'
+  };
+  
+  const direction = clockwise ? 'clockwise' : 'counter-clockwise';
+  return `Turn ${faceNames[face]} face ${direction}`;
+}
+
+// Show solution panel
+function showSolution() {
+  const result = findSolution();
+  const panel = document.getElementById('solutionPanel');
+  const stepsContainer = document.getElementById('solutionSteps');
+  
+  if (result.solved) {
+    stepsContainer.innerHTML = '<div class="solution-step">🎉 Cube is already solved!</div>';
+    document.getElementById('nextStepBtn').disabled = true;
+    document.getElementById('autoSolveBtn').disabled = true;
+  } else if (result.needsManualSolve) {
+    stepsContainer.innerHTML = `<div class="solution-step">${result.message}</div>`;
+    document.getElementById('nextStepBtn').disabled = true;
+    document.getElementById('autoSolveBtn').disabled = true;
+  } else if (result.steps.length === 0) {
+    stepsContainer.innerHTML = '<div class="solution-step">⚠️ No solution found. Try resetting the cube.</div>';
+    document.getElementById('nextStepBtn').disabled = true;
+    document.getElementById('autoSolveBtn').disabled = true;
+  } else {
+    solutionSteps = result.steps;
+    currentStepIndex = 0;
+    displaySolutionSteps();
+    document.getElementById('nextStepBtn').disabled = false;
+    document.getElementById('autoSolveBtn').disabled = false;
+  }
+  
+  panel.style.display = 'block';
+}
+
+function displaySolutionSteps() {
+  const stepsContainer = document.getElementById('solutionSteps');
+  stepsContainer.innerHTML = '';
+  
+  solutionSteps.forEach((step, index) => {
+    const stepDiv = document.createElement('div');
+    stepDiv.className = 'solution-step';
+    
+    if (index < currentStepIndex) {
+      stepDiv.classList.add('completed');
+    } else if (index === currentStepIndex) {
+      stepDiv.classList.add('current');
+    }
+    
+    stepDiv.innerHTML = `
+      <span class="step-number">${index + 1}.</span>
+      <span class="step-move">${step.notation}</span>
+      <span>${step.description}</span>
+    `;
+    
+    stepsContainer.appendChild(stepDiv);
+  });
+  
+  // Update button states
+  document.getElementById('nextStepBtn').disabled = currentStepIndex >= solutionSteps.length;
+}
+
+function executeNextStep() {
+  if (currentStepIndex >= solutionSteps.length || isRotating) return;
+  
+  const step = solutionSteps[currentStepIndex];
+  rotateLayer(step.move, step.clockwise, false);
+  
+  currentStepIndex++;
+  displaySolutionSteps();
+  
+  if (currentStepIndex >= solutionSteps.length) {
+    // Reset move tracking since cube is now solved
+    moveHistory = [];
+    moveCount = 0;
+    updateMoveCounter();
+    updateButtonStates(false);
+    
+    setTimeout(() => {
+      const stepsContainer = document.getElementById('solutionSteps');
+      const successMsg = document.createElement('div');
+      successMsg.className = 'solution-step';
+      successMsg.style.borderLeftColor = '#4ecdc4';
+      successMsg.innerHTML = '🎉 Solution complete!';
+      stepsContainer.appendChild(successMsg);
+    }, 400);
+  }
+}
+
+function autoSolve() {
+  if (isAutoSolving || currentStepIndex >= solutionSteps.length) return;
+  
+  isAutoSolving = true;
+  document.getElementById('autoSolveBtn').disabled = true;
+  document.getElementById('nextStepBtn').disabled = true;
+  
+  function executeStep() {
+    if (currentStepIndex >= solutionSteps.length) {
+      isAutoSolving = false;
+      document.getElementById('autoSolveBtn').disabled = true;
+      
+      // Reset move tracking since cube is now solved
+      moveHistory = [];
+      moveCount = 0;
+      updateMoveCounter();
+      updateButtonStates(false);
+      
+      setTimeout(() => {
+        const stepsContainer = document.getElementById('solutionSteps');
+        const successMsg = document.createElement('div');
+        successMsg.className = 'solution-step';
+        successMsg.style.borderLeftColor = '#4ecdc4';
+        successMsg.innerHTML = '🎉 Solution complete!';
+        stepsContainer.appendChild(successMsg);
+      }, 400);
+      return;
+    }
+    
+    if (isRotating) {
+      setTimeout(executeStep, 50);
+      return;
+    }
+    
+    const step = solutionSteps[currentStepIndex];
+    rotateLayer(step.move, step.clockwise, false);
+    currentStepIndex++;
+    displaySolutionSteps();
+    
+    setTimeout(executeStep, 350);
+  }
+  
+  executeStep();
+}
+
+function closeSolutionPanel() {
+  document.getElementById('solutionPanel').style.display = 'none';
+  isAutoSolving = false;
+  solutionSteps = [];
+  currentStepIndex = 0;
+}
+
+// Event listeners for solution buttons
+document.getElementById('getSolutionBtn').addEventListener('click', showSolution);
+document.getElementById('nextStepBtn').addEventListener('click', executeNextStep);
+document.getElementById('autoSolveBtn').addEventListener('click', autoSolve);
+document.getElementById('closeSolutionBtn').addEventListener('click', closeSolutionPanel);
 
 // ===== WINDOW RESIZE =====
 window.addEventListener('resize', () => {
