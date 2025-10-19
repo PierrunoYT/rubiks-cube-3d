@@ -69,8 +69,9 @@ function toggleLabels() {
 
 // ===== VISUAL ROTATION INDICATORS =====
 let rotationIndicators = [];
+let rotationCountBadge = null;
 
-function createRotationArrow(face, clockwise) {
+function createRotationArrow(face, clockwise, rotationCount = 1) {
   const group = new THREE.Group();
   
   // Create arrow shape for rotation indicator
@@ -179,17 +180,52 @@ function createRotationArrow(face, clockwise) {
   group.add(cone1, cone2, cone3, cone4);
   group.position.copy(position);
   
+  // Add rotation count badge if count > 1
+  if (rotationCount > 1) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = 256;
+    canvas.height = 256;
+    
+    // Draw circle background
+    context.fillStyle = '#4ecdc4';
+    context.beginPath();
+    context.arc(128, 128, 100, 0, Math.PI * 2);
+    context.fill();
+    
+    // Draw text
+    context.fillStyle = '#1a1a2e';
+    context.font = 'Bold 120px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText('x' + rotationCount, 128, 140);
+    
+    // Create sprite from canvas
+    const texture = new THREE.CanvasTexture(canvas);
+    const spriteMaterial = new THREE.SpriteMaterial({ 
+      map: texture,
+      transparent: true,
+      opacity: 0.95
+    });
+    const badge = new THREE.Sprite(spriteMaterial);
+    badge.scale.set(0.8, 0.8, 1);
+    group.add(badge);
+  }
+  
   return group;
 }
 
-function showRotationIndicator(face, clockwise) {
+function showRotationIndicator(face, clockwise, rotationCount = 1) {
   // Remove existing indicators
   clearRotationIndicators();
   
   // Create new indicator
-  const indicator = createRotationArrow(face, clockwise);
+  const indicator = createRotationArrow(face, clockwise, rotationCount);
   scene.add(indicator);
   rotationIndicators.push(indicator);
+  
+  // Highlight the layer that needs to move
+  highlightLayer(face);
   
   // Animate the indicator (pulsing effect)
   let startTime = Date.now();
@@ -217,6 +253,120 @@ function showRotationIndicator(face, clockwise) {
   }
   
   animateIndicator();
+}
+
+// Function to highlight the layer that needs to move
+function highlightLayer(face) {
+  let cubeletsToHighlight = [];
+  
+  switch(face) {
+    case 'R':
+      cubeletsToHighlight = cubelets.filter(c => Math.abs(c.position.x - 1) < 0.1);
+      break;
+    case 'L':
+      cubeletsToHighlight = cubelets.filter(c => Math.abs(c.position.x + 1) < 0.1);
+      break;
+    case 'U':
+      cubeletsToHighlight = cubelets.filter(c => Math.abs(c.position.y - 1) < 0.1);
+      break;
+    case 'D':
+      cubeletsToHighlight = cubelets.filter(c => Math.abs(c.position.y + 1) < 0.1);
+      break;
+    case 'F':
+      cubeletsToHighlight = cubelets.filter(c => Math.abs(c.position.z - 1) < 0.1);
+      break;
+    case 'B':
+      cubeletsToHighlight = cubelets.filter(c => Math.abs(c.position.z + 1) < 0.1);
+      break;
+  }
+  
+  // Store original states
+  const originalStates = [];
+  
+  // Add glow effect to layer
+  cubeletsToHighlight.forEach(cubelet => {
+    cubelet.children.forEach(child => {
+      if (child.material && child.geometry && child.geometry.type === 'BoxGeometry') {
+        const params = child.geometry.parameters;
+        // Check if it's a sticker (small depth)
+        if (params.depth < 0.1) {
+          originalStates.push({
+            material: child.material,
+            originalEmissive: child.material.emissive ? child.material.emissive.clone() : new THREE.Color(0x000000),
+            originalEmissiveIntensity: child.material.emissiveIntensity || 0
+          });
+          
+          // Add emissive glow
+          if (!child.material.emissive) {
+            child.material.emissive = new THREE.Color(0x4ecdc4);
+          } else {
+            child.material.emissive.setHex(0x4ecdc4);
+          }
+          child.material.emissiveIntensity = 0.5;
+        }
+      }
+    });
+  });
+  
+  // Animate the glow
+  let startTime = Date.now();
+  const glowDuration = 2000;
+  
+  function animateGlow() {
+    if (rotationIndicators.length === 0) {
+      // Restore original states
+      let index = 0;
+      cubeletsToHighlight.forEach(cubelet => {
+        cubelet.children.forEach(child => {
+          if (child.material && child.geometry && child.geometry.type === 'BoxGeometry') {
+            const params = child.geometry.parameters;
+            if (params.depth < 0.1 && originalStates[index]) {
+              child.material.emissive = originalStates[index].originalEmissive;
+              child.material.emissiveIntensity = originalStates[index].originalEmissiveIntensity;
+              index++;
+            }
+          }
+        });
+      });
+      return;
+    }
+    
+    const elapsed = Date.now() - startTime;
+    const progress = (elapsed % 600) / 600;
+    const intensity = 0.3 + Math.sin(progress * Math.PI * 2) * 0.2;
+    
+    cubeletsToHighlight.forEach(cubelet => {
+      cubelet.children.forEach(child => {
+        if (child.material && child.geometry && child.geometry.type === 'BoxGeometry') {
+          const params = child.geometry.parameters;
+          if (params.depth < 0.1) {
+            child.material.emissiveIntensity = intensity;
+          }
+        }
+      });
+    });
+    
+    if (elapsed < glowDuration) {
+      requestAnimationFrame(animateGlow);
+    } else {
+      // Restore original states
+      let index = 0;
+      cubeletsToHighlight.forEach(cubelet => {
+        cubelet.children.forEach(child => {
+          if (child.material && child.geometry && child.geometry.type === 'BoxGeometry') {
+            const params = child.geometry.parameters;
+            if (params.depth < 0.1 && originalStates[index]) {
+              child.material.emissive = originalStates[index].originalEmissive;
+              child.material.emissiveIntensity = originalStates[index].originalEmissiveIntensity;
+              index++;
+            }
+          }
+        });
+      });
+    }
+  }
+  
+  animateGlow();
 }
 
 function clearRotationIndicators() {
@@ -968,20 +1118,55 @@ function displaySolutionSteps() {
   const stepsContainer = document.getElementById('solutionSteps');
   stepsContainer.innerHTML = '';
   
-  solutionSteps.forEach((step, index) => {
+  // Group consecutive moves of the same face
+  const groupedSteps = [];
+  let i = 0;
+  while (i < solutionSteps.length) {
+    const currentStep = solutionSteps[i];
+    let count = 1;
+    let j = i + 1;
+    
+    // Count consecutive same moves
+    while (j < solutionSteps.length && 
+           solutionSteps[j].move === currentStep.move && 
+           solutionSteps[j].clockwise === currentStep.clockwise) {
+      count++;
+      j++;
+    }
+    
+    groupedSteps.push({
+      ...currentStep,
+      count: count,
+      originalIndices: Array.from({length: count}, (_, k) => i + k)
+    });
+    
+    i = j;
+  }
+  
+  groupedSteps.forEach((step, groupIndex) => {
     const stepDiv = document.createElement('div');
     stepDiv.className = 'solution-step';
     
-    if (index < currentStepIndex) {
+    // Check if this group is completed or current
+    const firstIndex = step.originalIndices[0];
+    const lastIndex = step.originalIndices[step.originalIndices.length - 1];
+    
+    if (lastIndex < currentStepIndex) {
       stepDiv.classList.add('completed');
-    } else if (index === currentStepIndex) {
+    } else if (firstIndex <= currentStepIndex && currentStepIndex <= lastIndex) {
       stepDiv.classList.add('current');
     }
     
+    // Display notation with count if > 1
+    const notation = step.count > 1 ? `${step.notation} (x${step.count})` : step.notation;
+    const description = step.count > 1 ? 
+      `${step.description} (${step.count} times)` : 
+      step.description;
+    
     stepDiv.innerHTML = `
-      <span class="step-number">${index + 1}.</span>
-      <span class="step-move">${step.notation}</span>
-      <span>${step.description}</span>
+      <span class="step-number">${firstIndex + 1}.</span>
+      <span class="step-move">${notation}</span>
+      <span>${description}</span>
     `;
     
     stepsContainer.appendChild(stepDiv);
@@ -996,8 +1181,18 @@ function executeNextStep() {
   
   const step = solutionSteps[currentStepIndex];
   
-  // Show visual indicator on the cube
-  showRotationIndicator(step.move, step.clockwise);
+  // Count consecutive same moves for display
+  let rotationCount = 1;
+  let tempIndex = currentStepIndex + 1;
+  while (tempIndex < solutionSteps.length && 
+         solutionSteps[tempIndex].move === step.move && 
+         solutionSteps[tempIndex].clockwise === step.clockwise) {
+    rotationCount++;
+    tempIndex++;
+  }
+  
+  // Show visual indicator on the cube with count
+  showRotationIndicator(step.move, step.clockwise, rotationCount);
   
   // Execute the move after a short delay so user can see the indicator
   setTimeout(() => {
@@ -1069,8 +1264,18 @@ function autoSolve() {
     
     const step = solutionSteps[currentStepIndex];
     
-    // Show visual indicator
-    showRotationIndicator(step.move, step.clockwise);
+    // Count consecutive same moves for display
+    let rotationCount = 1;
+    let tempIndex = currentStepIndex + 1;
+    while (tempIndex < solutionSteps.length && 
+           solutionSteps[tempIndex].move === step.move && 
+           solutionSteps[tempIndex].clockwise === step.clockwise) {
+      rotationCount++;
+      tempIndex++;
+    }
+    
+    // Show visual indicator with count
+    showRotationIndicator(step.move, step.clockwise, rotationCount);
     
     // Wait briefly for indicator visibility, then rotate
     setTimeout(() => {
