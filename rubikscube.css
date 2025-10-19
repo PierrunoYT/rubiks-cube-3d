@@ -36,6 +36,26 @@ body {
   text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
 }
 
+#controls button {
+  background: linear-gradient(145deg, #2a2a3a, #1a1a2a);
+  color: #4ecdc4;
+  border: 1px solid rgba(78, 205, 196, 0.3);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#controls button:hover {
+  background: linear-gradient(145deg, #3a3a4a, #2a2a3a);
+  border-color: rgba(78, 205, 196, 0.6);
+  box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+}
+
 #controls p {
   margin: 10px 0;
   font-size: 13px;
@@ -308,5 +328,84 @@ body {
 #solutionPanel::-webkit-scrollbar-thumb:hover,
 #solutionSteps::-webkit-scrollbar-thumb:hover {
   background: rgba(78, 205, 196, 0.5);
+}
+
+#notationGuide {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  background: rgba(10, 10, 20, 0.85);
+  padding: 15px 20px;
+  border-radius: 12px;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(78, 205, 196, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+#notationGuide h3 {
+  margin: 0 0 12px 0;
+  color: #4ecdc4;
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+  text-align: center;
+}
+
+#notationGuide p {
+  margin: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.notation-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notation-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.notation-face,
+.notation-empty {
+  width: 60px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid rgba(78, 205, 196, 0.3);
+  transition: all 0.3s ease;
+}
+
+.notation-empty {
+  opacity: 0;
+  border: none;
+}
+
+.notation-face:hover {
+  transform: scale(1.05);
+  border-color: rgba(78, 205, 196, 0.6);
+  box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+}
+
+.notation-face span {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  font-family: 'Consolas', monospace;
+}
+
+.notation-face small {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 2px;
 }
 

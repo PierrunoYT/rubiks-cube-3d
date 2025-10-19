@@ -12,6 +12,8 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
 - **Smooth Animations**: 300ms smooth rotation animations with proper quaternion-based transforms
 - **Standard Color Scheme**: Red, Orange, White, Yellow, Green, Blue
 - **Full Controls**: Rotate any face clockwise or counter-clockwise
+- **Visual Layer Labels**: 3D labels showing R, L, U, D, F, B on each face (toggleable)
+- **Notation Guide**: Interactive reference panel showing standard cube notation
 - **Color Picker Tool**: Select colors and click on cube faces to customize them
 - **Solution Finder**: Get step-by-step instructions to solve the cube
   - Shows each move in standard notation (R, L', U, etc.)
