@@ -19,8 +19,8 @@ This guide will help you deploy your Rubik's Cube to GitHub Pages.
 After creating the repository, GitHub will show you commands. Use these instead:
 
 ```bash
-# Add the GitHub remote (replace YOUR_USERNAME with your GitHub username)
-git remote add origin https://github.com/YOUR_USERNAME/rubiks-cube-3d.git
+# Add the GitHub remote
+git remote add origin https://github.com/PierrunoYT/rubiks-cube-3d.git
 
 # Verify the remote was added
 git remote -v
@@ -44,7 +44,7 @@ git push -u origin master
 
 Your site will be available at:
 ```
-https://YOUR_USERNAME.github.io/rubiks-cube-3d/rubikscube.html
+https://pierrunoyt.github.io/rubiks-cube-3d/rubikscube.html
 ```
 
 ## 🔄 Updating Your Site
@@ -59,10 +59,9 @@ git push
 
 GitHub Pages will automatically update within 1-2 minutes!
 
-## 📝 Don't Forget
+## 📝 All Set!
 
-After deployment, update the README.md links:
-- Replace `yourusername` with your actual GitHub username
+All URLs are already configured for your GitHub username: **PierrunoYT**
 
 ---
 
