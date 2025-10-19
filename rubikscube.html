@@ -349,6 +349,12 @@
     let moveCount = 0;
     let isSolving = false;
     let isScrambling = false;
+    
+    // ===== SAVE INITIAL STATE =====
+    const initialState = cubelets.map(c => ({
+      position: c.position.clone(),
+      quaternion: c.quaternion.clone()
+    }));
 
     // ===== LAYER ROTATION FUNCTION =====
     function rotateLayer(face, clockwise = true, recordMove = true) {
@@ -542,13 +548,61 @@
     function resetCube() {
       if (isRotating || isSolving || isScrambling) return;
       
-      moveHistory = [];
-      moveCount = 0;
-      updateMoveCounter();
+      isRotating = true;
+      updateButtonStates(true);
       
-      // If cube is solved, just clear history
-      // For a full reset, we'd need to track the solved state
-      alert('Move history cleared! Use Solve to return to original state.');
+      const duration = 500;
+      const startTime = Date.now();
+      
+      // Store current states
+      const startStates = cubelets.map(c => ({
+        position: c.position.clone(),
+        quaternion: c.quaternion.clone()
+      }));
+      
+      function animate() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Ease-out effect
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        
+        cubelets.forEach((cubelet, i) => {
+          // Interpolate position
+          cubelet.position.lerpVectors(
+            startStates[i].position, 
+            initialState[i].position, 
+            easeProgress
+          );
+          
+          // Interpolate rotation using slerp (spherical linear interpolation)
+          THREE.Quaternion.slerp(
+            startStates[i].quaternion,
+            initialState[i].quaternion,
+            cubelet.quaternion,
+            easeProgress
+          );
+        });
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          // Snap to exact initial state
+          cubelets.forEach((cubelet, i) => {
+            cubelet.position.copy(initialState[i].position);
+            cubelet.quaternion.copy(initialState[i].quaternion);
+          });
+          
+          // Clear move tracking
+          moveHistory = [];
+          moveCount = 0;
+          updateMoveCounter();
+          isRotating = false;
+          updateButtonStates(false);
+        }
+      }
+      
+      animate();
     }
 
     // ===== UPDATE MOVE COUNTER =====
