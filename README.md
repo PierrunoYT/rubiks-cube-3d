@@ -143,13 +143,20 @@ No build process, no dependencies to install. Just open and play!
 
 ### Architecture
 - **Three.js r128**: 3D rendering engine
-- **Pure JavaScript**: No frameworks or build tools required
-- **Modular Design**: Clean separation of concerns
-  - Scene setup and rendering
-  - Cube construction (27 individual cubelets)
-  - Animation and rotation logic
-  - UI and interaction handlers
-  - Solution algorithm
+- **ES6 Modules**: Modern JavaScript module system for better code organization
+- **Modular Design**: Clean separation of concerns with dedicated modules:
+  - **state.js**: Centralized state management
+  - **scene.js**: Three.js scene initialization and lighting
+  - **cube.js**: Rubik's cube construction (27 individual cubelets)
+  - **labels.js**: Face label creation and management
+  - **indicators.js**: Visual rotation indicators and highlighting
+  - **rotation.js**: Layer rotation animation logic
+  - **actions.js**: Cube actions (scramble, solve, reset)
+  - **controls.js**: Keyboard and mouse input handling
+  - **colorPicker.js**: Color picker functionality
+  - **solution.js**: Solution finding and execution system
+  - **ui.js**: UI updates and event listener management
+  - **main.js**: Application orchestration and initialization
 
 ### Key Technologies
 - **Quaternion Rotations**: Smooth, gimbal-lock-free rotations
@@ -191,13 +198,48 @@ No build process, no dependencies to install. Just open and play!
 
 ```
 rubiks-cube-3d/
-├── rubikscube.html    # Main HTML structure and UI elements
-├── rubikscube.css     # Styling, animations, and theme
-├── rubikscube.js      # Core logic, 3D rendering, and interactions
-├── README.md          # This file
-├── LICENSE            # MIT License
-└── DEPLOY.md          # Deployment guide
+├── js/                      # Modularized JavaScript code
+│   ├── main.js             # Main entry point and orchestration
+│   ├── state.js            # Centralized state management
+│   ├── scene.js            # Three.js scene and lighting setup
+│   ├── cube.js             # Rubik's cube construction
+│   ├── labels.js           # Face labels
+│   ├── indicators.js       # Visual rotation indicators
+│   ├── rotation.js         # Layer rotation logic
+│   ├── actions.js          # Cube actions (scramble, solve, reset)
+│   ├── controls.js         # Input controls (keyboard, mouse)
+│   ├── colorPicker.js      # Color picker functionality
+│   ├── solution.js         # Solution finding and execution
+│   └── ui.js               # UI management and updates
+├── rubikscube.html         # Main HTML structure and UI elements
+├── rubikscube.css          # Styling, animations, and theme
+├── README.md               # This file
+├── LICENSE                 # MIT License
+└── DEPLOY.md               # Deployment guide
 ```
+
+### Module Organization
+
+The codebase is organized by feature and responsibility:
+
+- **State Management**: All shared state is centralized in `state.js`, making it easy to track and manage application state
+- **Scene Setup**: `scene.js` handles all Three.js initialization, including camera, renderer, ground plane, and lighting
+- **Cube Logic**: `cube.js` contains the cubelet construction logic with proper color assignment
+- **Visual Feedback**: `indicators.js` and `labels.js` handle all visual guidance elements
+- **Core Mechanics**: `rotation.js` manages the animated layer rotations with quaternion-based transforms
+- **User Actions**: `actions.js` implements high-level cube operations (scramble, solve, reset)
+- **Input Handling**: `controls.js` manages all keyboard and mouse interactions
+- **Solution System**: `solution.js` contains the complete solution finding and execution logic
+- **UI Layer**: `ui.js` handles DOM updates and keeps UI logic separate from core functionality
+- **Orchestration**: `main.js` ties everything together and initializes the application
+
+### Benefits of Modular Structure
+
+- **Maintainability**: Each module has a single, clear responsibility
+- **Testability**: Modules can be tested independently
+- **Reusability**: Functions can be easily reused across different parts of the application
+- **Scalability**: New features can be added without affecting existing code
+- **Readability**: Smaller, focused files are easier to understand and navigate
 
 ## 🎨 Design Philosophy
 
@@ -221,11 +263,13 @@ rubiks-cube-3d/
 
 ## 🧪 Browser Compatibility
 
-- ✅ Chrome/Edge (Recommended)
-- ✅ Firefox
-- ✅ Safari
-- ✅ Opera
-- ⚠️ IE11 (Not supported - use a modern browser)
+**Requirements**: Modern browser with ES6 module support
+
+- ✅ Chrome/Edge 61+ (Recommended)
+- ✅ Firefox 60+
+- ✅ Safari 11+
+- ✅ Opera 48+
+- ⚠️ IE11 (Not supported - ES6 modules not available)
 
 ## 📝 License
 
