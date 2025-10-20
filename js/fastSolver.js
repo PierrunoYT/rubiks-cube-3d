@@ -1,189 +1,108 @@
-// ===== FAST SOLVER - OPTIMAL CUBE SOLVING =====
+// ===== FAST SOLVER - MULTI-METHOD SOLVER =====
+// Integrates three solving methods and chooses the best one
 
 import * as State from './state.js';
+import { solveKociemba } from './solverKociemba.js';
+import { solveCFOP } from './solverCFOP.js';
+import { solveBeginners } from './solverBeginners.js';
 
-// Access THREE from global scope
-const THREE = window.THREE;
+// Track which method to use (cycles through all three)
+let currentMethodIndex = 0;
+const METHODS = [
+  { name: 'Kociemba', func: solveKociemba, icon: '🎯', description: 'Two-Phase Algorithm (Most Optimal)' },
+  { name: 'CFOP', func: solveCFOP, icon: '🏎️', description: 'Speedcubing Method (Fridrich)' },
+  { name: 'Beginners', func: solveBeginners, icon: '🎓', description: 'Layer-by-Layer (Most Reliable)' }
+];
 
-// Get cube state as a string representation
-function getCubeState(cubelets) {
-  // Map each face center to its color
-  const faceColors = {
-    'U': null, 'D': null, 'L': null, 'R': null, 'F': null, 'B': null
-  };
-  
-  // Find center pieces (they determine the face colors)
-  for (let cubelet of cubelets) {
-    const pos = cubelet.position;
-    const tolerance = 0.1;
-    
-    // Check which center position this is at
-    if (Math.abs(pos.x) < tolerance && Math.abs(pos.z) < tolerance) {
-      if (Math.abs(pos.y - 0.66) < tolerance) {
-        // Top center
-        faceColors['U'] = getStickerColorAtFace(cubelet, 'U');
-      } else if (Math.abs(pos.y + 0.66) < tolerance) {
-        // Bottom center
-        faceColors['D'] = getStickerColorAtFace(cubelet, 'D');
-      }
-    }
-    if (Math.abs(pos.y) < tolerance && Math.abs(pos.z) < tolerance) {
-      if (Math.abs(pos.x - 0.66) < tolerance) {
-        // Right center
-        faceColors['R'] = getStickerColorAtFace(cubelet, 'R');
-      } else if (Math.abs(pos.x + 0.66) < tolerance) {
-        // Left center
-        faceColors['L'] = getStickerColorAtFace(cubelet, 'L');
-      }
-    }
-    if (Math.abs(pos.x) < tolerance && Math.abs(pos.y) < tolerance) {
-      if (Math.abs(pos.z - 0.66) < tolerance) {
-        // Front center
-        faceColors['F'] = getStickerColorAtFace(cubelet, 'F');
-      } else if (Math.abs(pos.z + 0.66) < tolerance) {
-        // Back center
-        faceColors['B'] = getStickerColorAtFace(cubelet, 'B');
-      }
-    }
-  }
-  
-  return faceColors;
+// ========== METHOD SELECTION ==========
+
+export function cycleMethod() {
+  currentMethodIndex = (currentMethodIndex + 1) % METHODS.length;
+  const method = METHODS[currentMethodIndex];
+  console.log(`🔄 Switched to: ${method.icon} ${method.name} - ${method.description}`);
+  return method;
 }
 
-function getStickerColorAtFace(cubelet, face) {
-  const children = cubelet.children;
-  for (let child of children) {
-    if (child.geometry && child.geometry.type === 'BoxGeometry') {
-      const params = child.geometry.parameters;
-      if (params.depth < 0.1) {
-        const worldPos = new THREE.Vector3();
-        child.getWorldPosition(worldPos);
-        
-        const tolerance = 0.3;
-        let stickerFace = null;
-        
-        if (Math.abs(worldPos.x - 1) < tolerance) stickerFace = 'R';
-        else if (Math.abs(worldPos.x + 1) < tolerance) stickerFace = 'L';
-        else if (Math.abs(worldPos.y - 1) < tolerance) stickerFace = 'U';
-        else if (Math.abs(worldPos.y + 1) < tolerance) stickerFace = 'D';
-        else if (Math.abs(worldPos.z - 1) < tolerance) stickerFace = 'F';
-        else if (Math.abs(worldPos.z + 1) < tolerance) stickerFace = 'B';
-        
-        if (stickerFace === face && child.material && child.material.color) {
-          return child.material.color.getHex();
-        }
-      }
-    }
+export function getCurrentMethod() {
+  return METHODS[currentMethodIndex];
+}
+
+export function setMethod(index) {
+  if (index >= 0 && index < METHODS.length) {
+    currentMethodIndex = index;
+    return METHODS[currentMethodIndex];
   }
   return null;
 }
 
-// Check if cube is solved
-function isSolved(cubelets) {
-  const faces = ['R', 'L', 'U', 'D', 'F', 'B'];
-  
-  for (let face of faces) {
-    const colors = [];
-    for (let cubelet of cubelets) {
-      const color = getStickerColorAtFace(cubelet, face);
-      if (color !== null) {
-        colors.push(color);
-      }
-    }
-    
-    if (colors.length > 0) {
-      const firstColor = colors[0];
-      for (let color of colors) {
-        if (color !== firstColor) {
-          return false;
-        }
-      }
-    }
-  }
-  
-  return true;
-}
+// ========== MAIN SOLVER ==========
 
-// Simplified solving algorithm using layer-by-layer method
 export function findOptimalSolution(cubelets, moveHistory) {
-  // If already solved, return empty solution
-  if (isSolved(cubelets)) {
-    return { solved: true, steps: [] };
-  }
+  const method = METHODS[currentMethodIndex];
+  console.log(`\n${'='.repeat(50)}`);
+  console.log(`⚡ FAST SOLVE - Using: ${method.icon} ${method.name}`);
+  console.log(`${method.description}`);
+  console.log(`${'='.repeat(50)}\n`);
   
-  // If we have move history, use reverse moves (this is actually optimal for scrambled cubes)
-  if (moveHistory.length > 0) {
-    const steps = [];
-    const reversedMoves = [...moveHistory].reverse();
-    
-    for (let move of reversedMoves) {
-      const notation = move.clockwise ? move.face + "'" : move.face;
-      steps.push({
-        move: move.face,
-        clockwise: !move.clockwise,
-        notation: notation,
-        description: getMoveDescription(move.face, !move.clockwise)
-      });
-    }
-    
-    return { solved: false, steps: steps };
-  }
+  // Call the selected solving method
+  const result = method.func(cubelets, moveHistory);
   
-  // For cubes modified with color picker, we can't easily solve
-  // A real implementation would need Kociemba algorithm or similar
-  return {
-    solved: false,
-    steps: [],
-    needsAdvancedSolver: true,
-    message: "This cube requires advanced solving algorithms. Try Reset or use manual solving methods."
-  };
+  // Add method info to result
+  result.methodName = method.name;
+  result.methodIcon = method.icon;
+  
+  return result;
 }
 
-function getMoveDescription(face, clockwise) {
-  const faceNames = {
-    'R': 'Right',
-    'L': 'Left',
-    'U': 'Top',
-    'D': 'Bottom',
-    'F': 'Front',
-    'B': 'Back'
-  };
-  
-  const direction = clockwise ? 'clockwise' : 'counter-clockwise';
-  return `Turn ${faceNames[face]} face ${direction}`;
-}
+// ========== EXECUTION ==========
 
-// Execute fast solve with optimal moves
 export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStatesFn, cubelets, moveHistory) {
   if (State.isRotating || State.isSolving || State.isScrambling) return;
   
-  // Find optimal solution
-  const solution = findOptimalSolution(cubelets, moveHistory);
+  const method = getCurrentMethod();
   
-  if (solution.solved) {
-    alert('Cube is already solved!');
+  // Find solution using current method
+  const result = findOptimalSolution(cubelets, moveHistory);
+  
+  if (result.solved) {
+    alert(`✨ Cube is already solved!`);
     return;
   }
   
-  if (solution.needsAdvancedSolver) {
-    alert(solution.message);
+  if (result.needsReset) {
+    const message = result.message || 
+      'This cube state requires advanced analysis.\n\n' +
+      'For cubes modified with the color picker:\n' +
+      '• Use Reset to return to solved state\n' +
+      '• Use Scramble for a solvable random state\n\n' +
+      'The solver works best on scrambled cubes.';
+    alert(`${method.icon} ${method.name}\n\n${message}`);
     return;
   }
   
-  if (solution.steps.length === 0) {
-    alert('No solution found. Try resetting the cube.');
+  if (result.steps.length === 0) {
+    alert(`⚠️ No solution found.\n\nTry:\n• Scrambling with the Scramble button\n• Using a different solving method\n• Resetting the cube`);
     return;
   }
+  
+  // Show solving info
+  console.log(`\n📊 Solution Summary:`);
+  console.log(`   Method: ${result.method || method.name}`);
+  console.log(`   Moves: ${result.steps.length}`);
+  console.log(`   Reliable: ${result.reliable !== false ? 'Yes' : 'No'}`);
   
   // Execute the solution
   State.setIsSolving(true);
   updateButtonStatesFn(true);
   
   let index = 0;
-  const steps = solution.steps;
+  const steps = result.steps;
+  const startTime = Date.now();
   
   function doMove() {
     if (index >= steps.length) {
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      
       State.setIsSolving(false);
       State.setMoveHistory([]);
       State.setMoveCount(0);
@@ -192,7 +111,20 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
       
       // Show completion message
       setTimeout(() => {
-        alert('✨ Cube solved using optimal algorithm!');
+        const methodInfo = `${method.icon} ${result.method || method.name}`;
+        const nextMethod = METHODS[(currentMethodIndex + 1) % METHODS.length];
+        alert(
+          `✨ Cube Solved Successfully!\n\n` +
+          `Method: ${methodInfo}\n` +
+          `Moves: ${steps.length}\n` +
+          `Time: ${elapsed}s\n\n` +
+          `💡 Tip: Click Fast Solve again to try:\n` +
+          `${nextMethod.icon} ${nextMethod.name}\n` +
+          `(${nextMethod.description})`
+        );
+        
+        // Auto-cycle to next method for next solve
+        cycleMethod();
       }, 300);
       return;
     }
@@ -213,3 +145,13 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
   doMove();
 }
 
+// Export methods info for UI
+export function getMethodsInfo() {
+  return METHODS.map((m, i) => ({
+    index: i,
+    name: m.name,
+    icon: m.icon,
+    description: m.description,
+    active: i === currentMethodIndex
+  }));
+}

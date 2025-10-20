@@ -15,6 +15,11 @@ export function updateButtonStates(disabled) {
   document.getElementById('fastSolveBtn').disabled = disabled;
   document.getElementById('resetBtn').disabled = disabled;
   document.getElementById('getSolutionBtn').disabled = disabled;
+  
+  // Disable solver method buttons during solving
+  document.getElementById('kociembaBtn').disabled = disabled;
+  document.getElementById('cfopBtn').disabled = disabled;
+  document.getElementById('beginnersBtn').disabled = disabled;
 }
 
 export function setupUIEventListeners(callbacks) {
@@ -29,5 +34,26 @@ export function setupUIEventListeners(callbacks) {
   document.getElementById('autoSolveBtn').addEventListener('click', callbacks.autoSolve);
   document.getElementById('closeSolutionBtn').addEventListener('click', callbacks.closeSolution);
   document.getElementById('toggleLabelsBtn').addEventListener('click', callbacks.toggleLabels);
+  
+  // Solver method selection buttons
+  document.getElementById('kociembaBtn').addEventListener('click', callbacks.selectKociemba);
+  document.getElementById('cfopBtn').addEventListener('click', callbacks.selectCFOP);
+  document.getElementById('beginnersBtn').addEventListener('click', callbacks.selectBeginners);
+}
+
+export function updateSolverButtonStates(activeIndex) {
+  const buttons = [
+    document.getElementById('kociembaBtn'),
+    document.getElementById('cfopBtn'),
+    document.getElementById('beginnersBtn')
+  ];
+  
+  buttons.forEach((btn, index) => {
+    if (index === activeIndex) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
 }
 
