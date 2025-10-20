@@ -18,6 +18,7 @@ import {
   autoSolve, 
   closeSolutionPanel 
 } from './solution.js';
+import { fastSolve } from './fastSolver.js';
 import { updateMoveCounter, updateButtonStates, setupUIEventListeners } from './ui.js';
 
 // Initialize the application
@@ -62,6 +63,10 @@ function init() {
   
   const solveWrapper = () => {
     solveCube(rotateLayerWrapper, updateMoveCounter, updateButtonStates);
+  };
+  
+  const fastSolveWrapper = () => {
+    fastSolve(rotateLayerWrapper, updateMoveCounter, updateButtonStates, State.cubelets, State.moveHistory);
   };
   
   const resetWrapper = () => {
@@ -138,6 +143,7 @@ function init() {
   setupUIEventListeners({
     scramble: scrambleWrapper,
     solve: solveWrapper,
+    fastSolve: fastSolveWrapper,
     reset: resetWrapper,
     getSolution: getSolutionWrapper,
     nextStep: nextStepWrapper,

@@ -12,6 +12,7 @@ export function updateMoveCounter() {
 export function updateButtonStates(disabled) {
   document.getElementById('scrambleBtn').disabled = disabled;
   document.getElementById('solveBtn').disabled = disabled || State.moveHistory.length === 0;
+  document.getElementById('fastSolveBtn').disabled = disabled;
   document.getElementById('resetBtn').disabled = disabled;
   document.getElementById('getSolutionBtn').disabled = disabled;
 }
@@ -20,6 +21,7 @@ export function setupUIEventListeners(callbacks) {
   // Button event listeners
   document.getElementById('scrambleBtn').addEventListener('click', callbacks.scramble);
   document.getElementById('solveBtn').addEventListener('click', callbacks.solve);
+  document.getElementById('fastSolveBtn').addEventListener('click', callbacks.fastSolve);
   document.getElementById('resetBtn').addEventListener('click', callbacks.reset);
   document.getElementById('getSolutionBtn').addEventListener('click', callbacks.getSolution);
   document.getElementById('nextStepBtn').addEventListener('click', callbacks.nextStep);
