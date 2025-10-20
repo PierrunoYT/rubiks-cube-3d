@@ -139,7 +139,8 @@ export function solveKociemba(cubelets, moveHistory) {
   
   const cube = new KociembaCube(cubelets);
   
-  if (cube.isSolved()) {
+  // Check if cube is actually solved (no move history = solved)
+  if (moveHistory.length === 0) {
     return { solved: true, steps: [], method: "Kociemba's Algorithm" };
   }
   

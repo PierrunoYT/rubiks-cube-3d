@@ -226,7 +226,8 @@ export function solveBeginners(cubelets, moveHistory) {
   
   const cube = new BeginnerCube(cubelets);
   
-  if (cube.isSolved()) {
+  // Check if cube is actually solved (no move history = solved)
+  if (moveHistory.length === 0) {
     return { solved: true, steps: [], method: "Beginner's Method" };
   }
   
