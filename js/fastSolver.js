@@ -109,19 +109,13 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
       // Show completion message
       setTimeout(() => {
         const methodInfo = `${method.icon} ${result.method || method.name}`;
-        const nextMethod = METHODS[(currentMethodIndex + 1) % METHODS.length];
         alert(
           `✨ Cube Solved Successfully!\n\n` +
           `Method: ${methodInfo}\n` +
           `Moves: ${steps.length}\n` +
           `Time: ${elapsed}s\n\n` +
-          `💡 Tip: Click Fast Solve again to try:\n` +
-          `${nextMethod.icon} ${nextMethod.name}\n` +
-          `(${nextMethod.description})`
+          `💡 Try different solving methods by clicking the buttons below!`
         );
-        
-        // Auto-cycle to next method for next solve
-        cycleMethod();
       }, 300);
       return;
     }
