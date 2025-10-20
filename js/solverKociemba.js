@@ -135,8 +135,6 @@ function solvePhase2(cube) {
 }
 
 export function solveKociemba(cubelets, moveHistory) {
-  console.log('🎯 Kociemba Solver: Starting two-phase algorithm');
-  
   const cube = new KociembaCube(cubelets);
   
   // Check if cube is actually solved (no move history = solved)
@@ -146,7 +144,6 @@ export function solveKociemba(cubelets, moveHistory) {
   
   // For scrambled cubes with move history, reversing is actually optimal
   if (moveHistory.length > 0 && moveHistory.length <= 100) {
-    console.log('📊 Kociemba: Using optimal reverse method (God\'s algorithm equivalent)');
     const steps = [];
     const reversedMoves = [...moveHistory].reverse();
     

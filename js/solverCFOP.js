@@ -204,8 +204,6 @@ function convertNotationToMoves(notation) {
 // ========== MAIN SOLVER ==========
 
 export function solveCFOP(cubelets, moveHistory) {
-  console.log('🏎️ CFOP Solver: Starting speedcubing method');
-  
   const cube = new CFOPCube(cubelets);
   
   // Check if cube is actually solved (no move history = solved)
@@ -215,7 +213,6 @@ export function solveCFOP(cubelets, moveHistory) {
   
   // For scrambled cubes, use reverse method as it's optimal
   if (moveHistory.length > 0 && moveHistory.length <= 100) {
-    console.log('📊 CFOP: Using optimal reverse (faster than layer-by-layer)');
     const steps = [];
     const reversedMoves = [...moveHistory].reverse();
     

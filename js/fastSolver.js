@@ -39,10 +39,6 @@ export function setMethod(index) {
 
 export function findOptimalSolution(cubelets, moveHistory) {
   const method = METHODS[currentMethodIndex];
-  console.log(`\n${'='.repeat(50)}`);
-  console.log(`⚡ FAST SOLVE - Using: ${method.icon} ${method.name}`);
-  console.log(`${method.description}`);
-  console.log(`${'='.repeat(50)}\n`);
   
   // Call the selected solving method
   const result = method.func(cubelets, moveHistory);
@@ -61,16 +57,8 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
   
   const method = getCurrentMethod();
   
-  // Debug logging
-  console.log('🔍 Debug Info:');
-  console.log('   Move History Length:', moveHistory.length);
-  console.log('   Move History:', moveHistory);
-  console.log('   Method:', method.name);
-  
   // Find solution using current method
   const result = findOptimalSolution(cubelets, moveHistory);
-  
-  console.log('   Result:', result);
   
   if (result.solved) {
     alert(`✨ Cube is already solved!\n\nMove History: ${moveHistory.length} moves`);
@@ -93,27 +81,24 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
     return;
   }
   
-  // Show solving info
-  console.log(`\n📊 Solution Summary:`);
-  console.log(`   Method: ${result.method || method.name}`);
-  console.log(`   Moves: ${result.steps.length}`);
-  console.log(`   Reliable: ${result.reliable !== false ? 'Yes' : 'No'}`);
-  
   // Execute the solution
-  State.setIsSolving(true);
-  updateButtonStatesFn(true);
-  
-  let index = 0;
-  const steps = result.steps;
-  const startTime = Date.now();
+  try {
+    State.setIsSolving(true);
+    updateButtonStatesFn(true);
+    
+    let index = 0;
+    const steps = result.steps;
+    const startTime = Date.now();
   
   function doMove() {
-    console.log(`🎬 doMove called - index: ${index}/${steps.length}`);
+    // Wait until previous rotation is complete FIRST
+    if (State.isRotating) {
+      setTimeout(doMove, 50);
+      return;
+    }
     
     if (index >= steps.length) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      
-      console.log('✅ All moves completed!');
       
       State.setIsSolving(false);
       State.setMoveHistory([]);
@@ -141,23 +126,22 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
       return;
     }
     
-    // Wait until previous rotation is complete
-    if (State.isRotating) {
-      console.log('⏳ Waiting for rotation to complete...');
-      setTimeout(doMove, 50);
-      return;
-    }
-    
     const step = steps[index];
-    console.log(`🔄 Executing move ${index + 1}: ${step.notation}`);
     rotateLayerFn(step.move, step.clockwise, false);
     
     index++;
-    setTimeout(doMove, 320);
+    
+    // Wait for rotation to complete before next move
+    setTimeout(doMove, 50);
   }
   
-  console.log('🚀 Starting execution...');
-  doMove();
+    doMove();
+  } catch (error) {
+    console.error('❌ Error during execution:', error);
+    State.setIsSolving(false);
+    updateButtonStatesFn(false);
+    alert(`Error: ${error.message}`);
+  }
 }
 
 // Export methods info for UI

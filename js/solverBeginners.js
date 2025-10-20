@@ -222,8 +222,6 @@ function convertNotationToMoves(notation) {
 // ========== MAIN SOLVER ==========
 
 export function solveBeginners(cubelets, moveHistory) {
-  console.log('🎓 Beginner\'s Method: Starting layer-by-layer solve');
-  
   const cube = new BeginnerCube(cubelets);
   
   // Check if cube is actually solved (no move history = solved)
@@ -233,7 +231,6 @@ export function solveBeginners(cubelets, moveHistory) {
   
   // For scrambled cubes with move history, reversing is fastest and most reliable
   if (moveHistory.length > 0 && moveHistory.length <= 100) {
-    console.log('📊 Beginner\'s: Using optimal reverse (guaranteed solution)');
     const steps = [];
     const reversedMoves = [...moveHistory].reverse();
     
