@@ -61,11 +61,19 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
   
   const method = getCurrentMethod();
   
+  // Debug logging
+  console.log('🔍 Debug Info:');
+  console.log('   Move History Length:', moveHistory.length);
+  console.log('   Move History:', moveHistory);
+  console.log('   Method:', method.name);
+  
   // Find solution using current method
   const result = findOptimalSolution(cubelets, moveHistory);
   
+  console.log('   Result:', result);
+  
   if (result.solved) {
-    alert(`✨ Cube is already solved!`);
+    alert(`✨ Cube is already solved!\n\nMove History: ${moveHistory.length} moves`);
     return;
   }
   
@@ -81,7 +89,7 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
   }
   
   if (result.steps.length === 0) {
-    alert(`⚠️ No solution found.\n\nTry:\n• Scrambling with the Scramble button\n• Using a different solving method\n• Resetting the cube`);
+    alert(`⚠️ No solution found.\n\nDebug Info:\n• Move History: ${moveHistory.length} moves\n• Result: ${JSON.stringify(result, null, 2)}\n\nTry:\n• Scrambling with the Scramble button\n• Using a different solving method\n• Resetting the cube`);
     return;
   }
   
@@ -100,8 +108,12 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
   const startTime = Date.now();
   
   function doMove() {
+    console.log(`🎬 doMove called - index: ${index}/${steps.length}`);
+    
     if (index >= steps.length) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      
+      console.log('✅ All moves completed!');
       
       State.setIsSolving(false);
       State.setMoveHistory([]);
@@ -131,17 +143,20 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
     
     // Wait until previous rotation is complete
     if (State.isRotating) {
+      console.log('⏳ Waiting for rotation to complete...');
       setTimeout(doMove, 50);
       return;
     }
     
     const step = steps[index];
+    console.log(`🔄 Executing move ${index + 1}: ${step.notation}`);
     rotateLayerFn(step.move, step.clockwise, false);
     
     index++;
     setTimeout(doMove, 320);
   }
   
+  console.log('🚀 Starting execution...');
   doMove();
 }
 
