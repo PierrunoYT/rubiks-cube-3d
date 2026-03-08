@@ -191,22 +191,22 @@ function optimizeMoves(moves) {
       count++;
     }
     
-    count = count % 4;
-    
-    if (count === 3) {
+    const remainder = count % 4;
+
+    if (remainder === 3) {
       optimized.push({
         move: current.move,
         clockwise: !current.clockwise,
         notation: current.clockwise ? current.move : current.move + "'",
         description: getMoveDescription(current.move, !current.clockwise)
       });
-    } else {
-      for (let j = 0; j < count; j++) {
+    } else if (remainder > 0) {
+      for (let j = 0; j < remainder; j++) {
         optimized.push(current);
       }
     }
-    
-    i += count === 0 ? 1 : count;
+
+    i += count;
   }
   
   return optimized;
@@ -216,4 +216,3 @@ function getMoveDescription(face, clockwise) {
   const names = { 'R': 'Right', 'L': 'Left', 'U': 'Top', 'D': 'Bottom', 'F': 'Front', 'B': 'Back' };
   return `Turn ${names[face]} face ${clockwise ? 'clockwise' : 'counter-clockwise'}`;
 }
-

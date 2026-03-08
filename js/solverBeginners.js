@@ -188,6 +188,14 @@ function step7_OrientCorners(cube) {
 
 function convertNotationToMoves(notation) {
   const moves = [];
+  const addMove = (face, clockwise, moveNotation) => {
+    moves.push({
+      move: face,
+      clockwise,
+      notation: moveNotation,
+      description: getMoveDescription(face, clockwise)
+    });
+  };
   
   for (const move of notation) {
     let face = move[0];
@@ -196,23 +204,16 @@ function convertNotationToMoves(notation) {
     if (move.includes("'")) {
       clockwise = false;
       face = move[0];
-    } else if (move.includes("2")) {
-      // Double turn
-      moves.push({
-        move: face,
-        clockwise: true,
-        notation: face,
-        description: getMoveDescription(face, true)
-      });
+    }
+
+    if (move.includes("2")) {
+      addMove(face, true, `${face}2`);
+      addMove(face, true, `${face}2`);
+      continue;
     }
     
     if (['U', 'D', 'L', 'R', 'F', 'B'].includes(face)) {
-      moves.push({
-        move: face,
-        clockwise: clockwise,
-        notation: clockwise ? face : face + "'",
-        description: getMoveDescription(face, clockwise)
-      });
+      addMove(face, clockwise, clockwise ? face : `${face}'`);
     }
   }
   
@@ -294,23 +295,23 @@ function optimizeMoves(moves) {
            moves[i + count].clockwise === current.clockwise) {
       count++;
     }
-    
-    count = count % 4;
-    
-    if (count === 3) {
+
+    const remainder = count % 4;
+
+    if (remainder === 3) {
       optimized.push({
         move: current.move,
         clockwise: !current.clockwise,
         notation: current.clockwise ? current.move : current.move + "'",
         description: getMoveDescription(current.move, !current.clockwise)
       });
-    } else {
-      for (let j = 0; j < count; j++) {
+    } else if (remainder > 0) {
+      for (let j = 0; j < remainder; j++) {
         optimized.push(current);
       }
     }
     
-    i += count === 0 ? 1 : count;
+    i += count;
   }
   
   return optimized;
@@ -320,4 +321,3 @@ function getMoveDescription(face, clockwise) {
   const names = { 'R': 'Right', 'L': 'Left', 'U': 'Top', 'D': 'Bottom', 'F': 'Front', 'B': 'Back' };
   return `Turn ${names[face]} face ${clockwise ? 'clockwise' : 'counter-clockwise'}`;
 }
-

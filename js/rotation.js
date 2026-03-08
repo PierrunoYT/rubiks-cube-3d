@@ -9,17 +9,22 @@ export function rotateLayer(face, clockwise = true, recordMove = true, state) {
   if (State.isRotating) return;
   State.setIsRotating(true);
 
+  const stateCallbacks = state || {};
+  const updateMoveCounter = typeof stateCallbacks.updateMoveCounter === 'function' ? stateCallbacks.updateMoveCounter : () => {};
+  const updateButtonStates = typeof stateCallbacks.updateButtonStates === 'function' ? stateCallbacks.updateButtonStates : () => {};
+  const invalidateSolution = typeof stateCallbacks.invalidateSolution === 'function' ? stateCallbacks.invalidateSolution : () => {};
+
   // Track move in history (unless we're solving or it's marked not to record)
   if (recordMove && !State.isSolving) {
     State.moveHistory.push({ face, clockwise });
     if (!State.isScrambling) {
       State.setMoveCount(State.moveCount + 1);
-      state.updateMoveCounter();
-      state.updateButtonStates(false); // Enable solve button after manual move
+      updateMoveCounter();
+      updateButtonStates(false); // Enable solve button after manual move
       
       // Check if solution is active and invalidate it if manual move detected
       if (State.solutionActive && !State.isAutoSolving) {
-        state.invalidateSolution();
+        invalidateSolution();
       }
     }
   }
@@ -31,7 +36,6 @@ export function rotateLayer(face, clockwise = true, recordMove = true, state) {
   // Select cubelets for this face
   let cubeletsToRotate = [];
   let axis = 'x';
-  let axisValue = 0;
 
   switch(face) {
     case 'R': // Right face (x = 1)
@@ -70,6 +74,15 @@ export function rotateLayer(face, clockwise = true, recordMove = true, state) {
       cubeletsToRotate = State.cubelets.filter(c => Math.abs(c.position.z) < 0.1);
       axis = 'z';
       break;
+    default:
+      // Unknown face identifier should not block input; just reset rotation state.
+      State.setIsRotating(false);
+      return;
+  }
+
+  if (cubeletsToRotate.length === 0) {
+    State.setIsRotating(false);
+    return;
   }
 
   // Store starting positions and rotations
@@ -121,4 +134,3 @@ export function rotateLayer(face, clockwise = true, recordMove = true, state) {
 
   animate();
 }
-
