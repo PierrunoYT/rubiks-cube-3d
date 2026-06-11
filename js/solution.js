@@ -191,7 +191,7 @@ export function displaySolutionSteps() {
 
 // Preview a single step by moving and then reversing
 export function previewStep(stepIndex, rotateLayerFn, showRotationIndicatorFn, clearRotationIndicatorsFn) {
-  if (State.isPreviewing || State.isRotating || !State.solutionActive) return;
+  if (State.isRotating || State.isBusy() || !State.solutionActive) return;
   
   State.setIsPreviewing(true);
   const step = State.solutionSteps[stepIndex];
@@ -231,7 +231,7 @@ export function previewStep(stepIndex, rotateLayerFn, showRotationIndicatorFn, c
 
 // Preview all remaining steps in sequence with actual movements
 export function previewAllSteps(rotateLayerFn, showRotationIndicatorFn, clearRotationIndicatorsFn) {
-  if (State.isPreviewing || State.isRotating || !State.solutionActive) return;
+  if (State.isRotating || State.isBusy() || !State.solutionActive) return;
   
   State.setIsPreviewing(true);
   
@@ -319,7 +319,11 @@ export function previewAllSteps(rotateLayerFn, showRotationIndicatorFn, clearRot
 }
 
 export function executeNextStep(rotateLayerFn, showRotationIndicatorFn, clearRotationIndicatorsFn, updateMoveCounterFn, updateButtonStatesFn) {
-  if (State.currentStepIndex >= State.solutionSteps.length || State.isRotating || !State.solutionActive) return;
+  if (State.currentStepIndex >= State.solutionSteps.length || State.isRotating || State.isBusy() || !State.solutionActive) return;
+  
+  // Own the cube for the whole indicator -> rotate -> clear window so a second
+  // click (or a manual move) can't interleave and desync the solution.
+  State.setIsStepExecuting(true);
   
   const step = State.solutionSteps[State.currentStepIndex];
   
@@ -343,6 +347,7 @@ export function executeNextStep(rotateLayerFn, showRotationIndicatorFn, clearRot
     // Clear indicator after move completes
     setTimeout(() => {
       clearRotationIndicatorsFn();
+      State.setIsStepExecuting(false);
     }, 350);
   }, 1500);
   
@@ -369,7 +374,7 @@ export function executeNextStep(rotateLayerFn, showRotationIndicatorFn, clearRot
 }
 
 export function autoSolve(rotateLayerFn, showRotationIndicatorFn, clearRotationIndicatorsFn, updateMoveCounterFn, updateButtonStatesFn) {
-  if (State.isAutoSolving || State.currentStepIndex >= State.solutionSteps.length || !State.solutionActive) return;
+  if (State.isBusy() || State.currentStepIndex >= State.solutionSteps.length || !State.solutionActive) return;
   
   State.setIsAutoSolving(true);
   document.getElementById('autoSolveBtn').disabled = true;
@@ -440,6 +445,7 @@ export function closeSolutionPanel(clearRotationIndicatorsFn) {
   document.getElementById('solutionPanel').style.display = 'none';
   State.setIsAutoSolving(false);
   State.setIsPreviewing(false);
+  State.setIsStepExecuting(false);
   State.setSolutionSteps([]);
   State.setCurrentStepIndex(0);
   State.setSolutionActive(false);

@@ -6,7 +6,7 @@ import * as State from './state.js';
 const THREE = window.THREE;
 
 export function scrambleCube(rotateLayerFn, updateButtonStatesFn) {
-  if (State.isRotating || State.isSolving) return;
+  if (State.isRotating || State.isBusy()) return;
   
   State.setIsScrambling(true);
   const faces = ['R', 'L', 'U', 'D', 'F', 'B'];
@@ -54,7 +54,7 @@ export function scrambleCube(rotateLayerFn, updateButtonStatesFn) {
 }
 
 export function solveCube(rotateLayerFn, updateMoveCounterFn, updateButtonStatesFn) {
-  if (State.isRotating || State.isSolving || State.moveHistory.length === 0) return;
+  if (State.isRotating || State.isBusy() || State.moveHistory.length === 0) return;
   
   State.setIsSolving(true);
   updateButtonStatesFn(true);
@@ -91,7 +91,7 @@ export function solveCube(rotateLayerFn, updateMoveCounterFn, updateButtonStates
 }
 
 export function resetCube(cubelets, initialState, updateMoveCounterFn, updateButtonStatesFn) {
-  if (State.isRotating || State.isSolving || State.isScrambling) return;
+  if (State.isRotating || State.isBusy()) return;
   
   State.setIsRotating(true);
   updateButtonStatesFn(true);
@@ -121,10 +121,9 @@ export function resetCube(cubelets, initialState, updateMoveCounterFn, updateBut
       );
       
       // Interpolate rotation using slerp (spherical linear interpolation)
-      THREE.Quaternion.slerp(
+      cubelet.quaternion.slerpQuaternions(
         startStates[i].quaternion,
         initialState[i].quaternion,
-        cubelet.quaternion,
         easeProgress
       );
     });

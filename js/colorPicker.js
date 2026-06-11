@@ -3,24 +3,40 @@
 import * as State from './state.js';
 
 export function setupColorPicker(scene, renderer, camera) {
-  // Handle color selection
+  // Handle color selection (clicking the selected swatch again deselects it)
   document.querySelectorAll('.color-option').forEach(option => {
     option.addEventListener('click', function() {
-      // Remove selected class from all options
+      const color = parseInt(this.getAttribute('data-color'));
+      
+      if (State.selectedColor === color) {
+        this.classList.remove('selected');
+        State.setSelectedColor(null);
+        return;
+      }
+      
       document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
-      
-      // Add selected class to clicked option
       this.classList.add('selected');
-      
-      // Store selected color
-      State.setSelectedColor(parseInt(this.getAttribute('data-color')));
+      State.setSelectedColor(color);
     });
+  });
+
+  // Track pointer-down position so camera-rotation drags don't paint stickers
+  let downX = 0, downY = 0;
+  renderer.domElement.addEventListener('mousedown', (event) => {
+    downX = event.clientX;
+    downY = event.clientY;
   });
 
   // Handle cube face clicking
   renderer.domElement.addEventListener('click', (event) => {
     // Don't do anything if no color is selected
     if (State.selectedColor === null) return;
+    
+    // Don't paint while an animation or automated sequence is running
+    if (State.isRotating || State.isBusy()) return;
+    
+    // Ignore clicks that were actually drags (camera rotation or layer drag)
+    if (Math.abs(event.clientX - downX) > 5 || Math.abs(event.clientY - downY) > 5) return;
     
     // Calculate mouse position in normalized device coordinates (-1 to +1)
     State.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;

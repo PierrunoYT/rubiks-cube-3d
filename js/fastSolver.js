@@ -9,7 +9,7 @@ export function findOptimalSolution(cubelets) {
 }
 
 export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStatesFn, cubelets) {
-  if (State.isRotating || State.isSolving || State.isScrambling || State.isPreviewing) return;
+  if (State.isRotating || State.isBusy()) return;
 
   const result = solveKociemba(cubelets);
 

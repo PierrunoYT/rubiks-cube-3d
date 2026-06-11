@@ -7,6 +7,10 @@ const THREE = window.THREE;
 
 export function rotateLayer(face, clockwise = true, recordMove = true, state) {
   if (State.isRotating) return;
+  // Block user-initiated moves while an automated sequence (solve, scramble,
+  // preview, step execution) owns the cube; otherwise the cube state and the
+  // move history desync and the cube becomes unsolvable.
+  if (recordMove && State.isBusy()) return;
   State.setIsRotating(true);
 
   const stateCallbacks = state || {};

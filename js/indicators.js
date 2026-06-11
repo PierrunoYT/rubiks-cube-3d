@@ -308,7 +308,10 @@ export function clearRotationIndicators(scene, rotationIndicators) {
     scene.remove(indicator);
     indicator.children.forEach(child => {
       if (child.geometry) child.geometry.dispose();
-      if (child.material) child.material.dispose();
+      if (child.material) {
+        if (child.material.map) child.material.map.dispose();
+        child.material.dispose();
+      }
     });
   });
   State.setRotationIndicators([]);

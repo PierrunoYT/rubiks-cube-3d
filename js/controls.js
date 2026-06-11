@@ -38,16 +38,31 @@ export function setupKeyboardControls(rotateLayerFn, scrambleFn) {
 }
 
 export function setupMouseControls(camera, renderer, cubeGroup, rotateLayerFn) {
+  const DRAG_THRESHOLD = 30; // pixels before a layer drag triggers a rotation
+
   document.addEventListener('mousedown', (e) => {
+    // Shift + click on the cube starts a layer drag instead of camera rotation
+    if (e.shiftKey && !State.isBusy() && !State.isRotating) {
+      const layer = getLayerFromClick(e, State.mouse, State.raycaster, renderer, cubeGroup, camera);
+      if (layer) {
+        State.setIsDraggingLayer(true);
+        State.setDraggedLayer(layer);
+        State.setDragStartX(e.clientX);
+        State.setDragStartY(e.clientY);
+        return;
+      }
+    }
+    
     State.setMouseDown(true);
     State.setLastMouseX(e.clientX);
     State.setLastMouseY(e.clientY);
   });
 
   document.addEventListener('mousemove', (e) => {
+    if (State.isDraggingLayer) return; // layer drag resolves on mouseup
     if (!State.mouseDown) return;
     
-    // Camera rotation only
+    // Camera rotation
     const deltaX = e.clientX - State.lastMouseX;
     const deltaY = e.clientY - State.lastMouseY;
     
@@ -61,7 +76,22 @@ export function setupMouseControls(camera, renderer, cubeGroup, rotateLayerFn) {
     State.setLastMouseY(e.clientY);
   });
 
-  document.addEventListener('mouseup', () => {
+  document.addEventListener('mouseup', (e) => {
+    if (State.isDraggingLayer) {
+      const deltaX = e.clientX - State.dragStartX;
+      const deltaY = e.clientY - State.dragStartY;
+      
+      if (Math.abs(deltaX) >= DRAG_THRESHOLD || Math.abs(deltaY) >= DRAG_THRESHOLD) {
+        const rotation = determineRotationFromDrag(State.draggedLayer, deltaX, deltaY, camera);
+        if (rotation) {
+          rotateLayerFn(rotation.face, rotation.clockwise);
+        }
+      }
+      
+      State.setIsDraggingLayer(false);
+      State.setDraggedLayer(null);
+    }
+    
     State.setMouseDown(false);
   });
 }

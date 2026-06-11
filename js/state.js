@@ -9,6 +9,12 @@ export let isSolving = false;
 export let isScrambling = false;
 export let isPreviewing = false;
 export let isAutoSolving = false;
+export let isStepExecuting = false;
+
+// True while any automated sequence owns the cube; user moves must be blocked.
+export function isBusy() {
+  return isSolving || isScrambling || isPreviewing || isAutoSolving || isStepExecuting;
+}
 
 // Cube state
 export let cubelets = [];
@@ -56,6 +62,7 @@ export function setIsSolving(value) { isSolving = value; }
 export function setIsScrambling(value) { isScrambling = value; }
 export function setIsPreviewing(value) { isPreviewing = value; }
 export function setIsAutoSolving(value) { isAutoSolving = value; }
+export function setIsStepExecuting(value) { isStepExecuting = value; }
 
 export function setCubelets(value) { cubelets = value; }
 export function setCubeGroup(value) { cubeGroup = value; }

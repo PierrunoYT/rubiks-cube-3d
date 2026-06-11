@@ -66,8 +66,9 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
 #### Cube Functions
 - **Scramble**: Randomizes cube with 20 intelligent moves (avoids canceling moves)
 - **Solve**: Reverses all moves to return to solved state
+- **Fast Solve (Kociemba)**: Solves any valid cube state in ≤22 moves using Kociemba's two-phase algorithm
 - **Reset**: Smoothly animates cube back to initial configuration
-- **Get Solution**: Analyzes current state and provides solving steps
+- **Get Solution**: Analyzes current state with the Kociemba solver and provides step-by-step solving instructions
 
 ### 🎯 UI/UX Design
 - **Modern Glassmorphism**: Translucent panels with backdrop blur effects
@@ -204,11 +205,12 @@ No build process, no dependencies to install. Just open and play!
 - **Opacity Fading**: Dynamic ground/grid visibility based on camera position
 
 ### Solution Algorithm
-- **Move History Based**: Tracks all moves for simple reversal solving
-- **Notation Translation**: Converts internal moves to standard notation (R, L', U2, etc.)
+- **Kociemba Two-Phase Solver**: Real solver (via [cubejs](https://github.com/ldez/cubejs)) that reads the live 3D cube state and solves any valid configuration in ≤22 moves — see [SOLVERS.md](SOLVERS.md)
+- **State Reading**: Converts sticker world positions into a standard 54-facelet string
+- **Notation Translation**: Standard cube notation (R, L', U2, etc.) — clockwise as viewed from outside each face
 - **Smart Grouping**: Consecutive identical moves are grouped for clarity
 - **Preview Mode**: Non-destructive move preview with automatic reversal
-- **Validation**: Detects manual state changes and invalidates solution
+- **Validation**: Detects manual state changes and invalidates solution; detects unsolvable color-picker states
 
 ## 📁 File Structure
 
@@ -226,6 +228,8 @@ rubiks-cube-3d/
 │   ├── controls.js         # Input controls (keyboard, mouse)
 │   ├── colorPicker.js      # Color picker functionality
 │   ├── solution.js         # Solution finding and execution
+│   ├── solverKociemba.js   # Kociemba two-phase solver integration (cubejs)
+│   ├── fastSolver.js       # Fast solve execution
 │   └── ui.js               # UI management and updates
 ├── rubikscube.html         # Main HTML structure and UI elements
 ├── rubikscube.css          # Styling, animations, and theme
@@ -313,10 +317,10 @@ Pull requests are welcome! Areas for contribution:
 - [x] Preview mode (individual and all steps)
 - [x] Shift+Drag layer control
 - [x] Smart move grouping
+- [x] **Kociemba two-phase solver** (solves any valid state in ≤22 moves)
 
 ### Planned 🚧
 - [ ] **Timer for speedsolving** with scramble generation
-- [ ] **Advanced solve algorithms** (Kociemba, CFOP, Roux)
 - [ ] **Pattern generator** (checkerboard, stripes, cube-in-cube, etc.)
 - [ ] **Different cube sizes** (2x2, 4x4, 5x5, Pyraminx, Megaminx)
 - [ ] **Touch controls** for mobile devices
@@ -333,9 +337,10 @@ Pull requests are welcome! Areas for contribution:
 
 ## 🐛 Known Issues
 
-- Color picker modifications invalidate solution (by design - complex solver needed)
+- Color picker edits that create an *unsolvable* cube (e.g. a single twisted corner) are detected and reported — use Reset
 - Preview mode may have slight timing variations on slower devices
 - Shift+Drag rotation direction depends on camera angle (working as intended)
+- Solver requires an internet connection on first load (Three.js and cubejs are loaded from CDNs)
 
 ## 💡 Tips & Tricks
 
