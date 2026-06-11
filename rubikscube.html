@@ -81,24 +81,10 @@
   </div>
 
   <div id="solverPanel">
-    <h3>⚡ Fast Solve Methods</h3>
-    <p class="solver-description">Choose your solving algorithm:</p>
-    <button id="kociembaBtn" class="solver-btn active">
-      <span class="solver-icon">🎯</span>
-      <span class="solver-name">Kociemba</span>
-      <span class="solver-info">~20 moves</span>
-    </button>
-    <button id="cfopBtn" class="solver-btn">
-      <span class="solver-icon">🏎️</span>
-      <span class="solver-name">CFOP</span>
-      <span class="solver-info">Speedcubing</span>
-    </button>
-    <button id="beginnersBtn" class="solver-btn">
-      <span class="solver-icon">🎓</span>
-      <span class="solver-name">Beginner's</span>
-      <span class="solver-info">Most Reliable</span>
-    </button>
-    <button id="fastSolveBtn" class="fast-solve-execute">⚡ Execute Fast Solve</button>
+    <h3>⚡ Fast Solve</h3>
+    <p class="solver-description">Kociemba two-phase algorithm (~20 moves)</p>
+    <div id="solverStatus" class="solver-status">⏳ Initializing solver...</div>
+    <button id="fastSolveBtn" class="fast-solve-execute" disabled>🎯 Solve with Kociemba</button>
   </div>
 
   <div id="solutionPanel" style="display: none;">
@@ -126,6 +112,8 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/cube.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/solve.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

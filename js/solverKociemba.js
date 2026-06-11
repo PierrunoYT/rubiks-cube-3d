@@ -1,218 +1,219 @@
-// ===== KOCIEMBA'S TWO-PHASE ALGORITHM =====
-// This is the most efficient solver - finds solutions in ~20 moves
-// Phase 1: Get cube to G1 group (oriented edges, placed corners in correct slice)
-// Phase 2: Solve within G1 to reach solved state
-
-import * as State from './state.js';
+// ===== KOCIEMBA TWO-PHASE SOLVER =====
+// Uses the cubejs library (loaded globally as window.Cube) which implements
+// Herbert Kociemba's two-phase algorithm. Solves ANY valid cube state
+// (scrambles, manual moves, even color-picker edits) in ~20 moves.
 
 const THREE = window.THREE;
 
-// ========== MOVE TABLES ==========
+let solverInitialized = false;
+let solverInitializing = false;
+const initCallbacks = [];
 
-const MOVES = ['U', 'D', 'L', 'R', 'F', 'B'];
-const PHASE2_MOVES = ['U', 'D', 'L2', 'R2', 'F2', 'B2']; // Phase 2 only uses these moves
+// Initialize the solver's pruning tables (takes a few seconds, done once).
+// Safe to call multiple times; callbacks fire once init completes.
+export function initKociemba(onReady) {
+  if (solverInitialized) {
+    if (onReady) onReady();
+    return;
+  }
+  if (onReady) initCallbacks.push(onReady);
+  if (solverInitializing) return;
+  solverInitializing = true;
 
-// ========== CUBE STATE CLASS ==========
-
-class KociembaCube {
-  constructor(cubelets) {
-    this.cubelets = cubelets;
-  }
-  
-  // Convert current 3D cube state to internal representation
-  getStateRepresentation() {
-    // This would contain edge orientation, corner orientation,
-    // edge permutation, and corner permutation
-    // Simplified for this implementation
-    return {
-      edgeOrientation: this.getEdgeOrientation(),
-      cornerOrientation: this.getCornerOrientation(),
-      edgePermutation: this.getEdgePermutation(),
-      cornerPermutation: this.getCornerPermutation()
-    };
-  }
-  
-  getEdgeOrientation() {
-    // Calculate edge orientation state (0 or 1 for each of 12 edges)
-    // Returns a 12-bit number representing orientation
-    return 0;
-  }
-  
-  getCornerOrientation() {
-    // Calculate corner orientation state (0, 1, or 2 for each of 8 corners)
-    // Returns a base-3 number
-    return 0;
-  }
-  
-  getEdgePermutation() {
-    // Get permutation of 12 edges
-    return Array.from({length: 12}, (_, i) => i);
-  }
-  
-  getCornerPermutation() {
-    // Get permutation of 8 corners
-    return Array.from({length: 8}, (_, i) => i);
-  }
-  
-  isSolved() {
-    const faces = ['U', 'D', 'L', 'R', 'F', 'B'];
-    for (const face of faces) {
-      const colors = this.getFaceColors(face);
-      if (!colors.every(c => c === colors[0])) return false;
+  const start = () => {
+    if (typeof window.Cube === 'undefined') {
+      // cubejs script not loaded yet, retry shortly
+      setTimeout(start, 200);
+      return;
     }
-    return true;
-  }
-  
-  getFaceColors(face) {
-    const positions = this.getFacePositions(face);
-    return positions.map(pos => this.getColorAt(pos[0], pos[1], pos[2], face));
-  }
-  
-  getFacePositions(face) {
-    const map = {
-      'U': [[0,1,0], [-1,1,0], [1,1,0], [0,1,-1], [0,1,1]],
-      'D': [[0,-1,0], [-1,-1,0], [1,-1,0], [0,-1,-1], [0,-1,1]],
-      'R': [[1,0,0], [1,1,0], [1,-1,0], [1,0,-1], [1,0,1]],
-      'L': [[-1,0,0], [-1,1,0], [-1,-1,0], [-1,0,-1], [-1,0,1]],
-      'F': [[0,0,1], [0,1,1], [0,-1,1], [-1,0,1], [1,0,1]],
-      'B': [[0,0,-1], [0,1,-1], [0,-1,-1], [-1,0,-1], [1,0,-1]]
-    };
-    return map[face] || [];
-  }
-  
-  getColorAt(x, y, z, face) {
-    for (const cubelet of this.cubelets) {
-      const pos = cubelet.position;
-      const cx = Math.round(pos.x / 0.66);
-      const cy = Math.round(pos.y / 0.66);
-      const cz = Math.round(pos.z / 0.66);
-      
-      if (cx === x && cy === y && cz === z) {
-        return this.getStickerColor(cubelet, face);
-      }
-    }
-    return null;
-  }
-  
-  getStickerColor(cubelet, targetFace) {
-    for (const child of cubelet.children) {
-      if (child.geometry?.type === 'BoxGeometry' && child.geometry.parameters.depth < 0.1) {
-        const worldPos = new THREE.Vector3();
-        child.getWorldPosition(worldPos);
-        
-        const tolerance = 0.3;
-        let face = null;
-        
-        if (Math.abs(worldPos.x - 1) < tolerance) face = 'R';
-        else if (Math.abs(worldPos.x + 1) < tolerance) face = 'L';
-        else if (Math.abs(worldPos.y - 1) < tolerance) face = 'U';
-        else if (Math.abs(worldPos.y + 1) < tolerance) face = 'D';
-        else if (Math.abs(worldPos.z - 1) < tolerance) face = 'F';
-        else if (Math.abs(worldPos.z + 1) < tolerance) face = 'B';
-        
-        if (face === targetFace && child.material?.color) {
-          return child.material.color.getHex();
-        }
-      }
-    }
-    return null;
-  }
-}
-
-// ========== SOLVER IMPLEMENTATION ==========
-
-function solvePhase1(cube) {
-  // Phase 1: Orient edges and get corners to correct slice
-  // This would use IDA* search with pruning tables
-  // Simplified: return empty for now
-  return [];
-}
-
-function solvePhase2(cube) {
-  // Phase 2: Solve within the G1 subgroup
-  // Only uses half-turns on L, R, F, B and any U, D moves
-  return [];
-}
-
-export function solveKociemba(cubelets, moveHistory) {
-  const cube = new KociembaCube(cubelets);
-  
-  // Check if cube is actually solved (no move history = solved)
-  if (moveHistory.length === 0) {
-    return { solved: true, steps: [], method: "Kociemba's Algorithm" };
-  }
-  
-  // For scrambled cubes with move history, reversing is actually optimal
-  if (moveHistory.length > 0 && moveHistory.length <= 100) {
-    const steps = [];
-    const reversedMoves = [...moveHistory].reverse();
-    
-    for (const move of reversedMoves) {
-      steps.push({
-        move: move.face,
-        clockwise: !move.clockwise,
-        notation: move.clockwise ? move.face + "'" : move.face,
-        description: getMoveDescription(move.face, !move.clockwise)
-      });
-    }
-    
-    return {
-      solved: false,
-      steps: optimizeMoves(steps),
-      method: "Kociemba's Algorithm (Optimal Reverse)",
-      moveCount: steps.length
-    };
-  }
-  
-  // Full Kociemba implementation would go here
-  // Phase 1 + Phase 2
-  const phase1Moves = solvePhase1(cube);
-  const phase2Moves = solvePhase2(cube);
-  
-  return {
-    solved: false,
-    steps: [...phase1Moves, ...phase2Moves],
-    method: "Kociemba's Two-Phase Algorithm",
-    needsReset: phase1Moves.length === 0 && phase2Moves.length === 0
+    // Defer so the UI can paint before the heavy table generation
+    setTimeout(() => {
+      window.Cube.initSolver();
+      solverInitialized = true;
+      solverInitializing = false;
+      console.log('✅ Kociemba solver initialized');
+      initCallbacks.forEach(cb => cb());
+      initCallbacks.length = 0;
+    }, 50);
   };
+  start();
 }
 
-function optimizeMoves(moves) {
-  const optimized = [];
-  let i = 0;
-  
-  while (i < moves.length) {
-    const current = moves[i];
-    let count = 1;
-    
-    while (i + count < moves.length &&
-           moves[i + count].move === current.move &&
-           moves[i + count].clockwise === current.clockwise) {
-      count++;
-    }
-    
-    const remainder = count % 4;
+export function isSolverReady() {
+  return solverInitialized;
+}
 
-    if (remainder === 3) {
-      optimized.push({
-        move: current.move,
-        clockwise: !current.clockwise,
-        notation: current.clockwise ? current.move : current.move + "'",
-        description: getMoveDescription(current.move, !current.clockwise)
-      });
-    } else if (remainder > 0) {
-      for (let j = 0; j < remainder; j++) {
-        optimized.push(current);
+// ========== CUBE STATE READING ==========
+
+// Read the color of the sticker of `cubelet` that currently faces `face`.
+function getStickerColor(cubelet, targetFace) {
+  for (const child of cubelet.children) {
+    if (child.geometry?.type === 'BoxGeometry' && child.geometry.parameters.depth < 0.1) {
+      // Skip the dark border meshes behind each sticker
+      if (child.material?.color && child.material.color.getHex() === 0x333333) continue;
+
+      const worldPos = new THREE.Vector3();
+      child.getWorldPosition(worldPos);
+
+      const tolerance = 0.3;
+      let face = null;
+      if (Math.abs(worldPos.x - 1.46) < tolerance) face = 'R';
+      else if (Math.abs(worldPos.x + 1.46) < tolerance) face = 'L';
+      else if (Math.abs(worldPos.y - 1.46) < tolerance) face = 'U';
+      else if (Math.abs(worldPos.y + 1.46) < tolerance) face = 'D';
+      else if (Math.abs(worldPos.z - 1.46) < tolerance) face = 'F';
+      else if (Math.abs(worldPos.z + 1.46) < tolerance) face = 'B';
+
+      if (face === targetFace && child.material?.color) {
+        return child.material.color.getHex();
       }
     }
-
-    i += count;
   }
-  
-  return optimized;
+  return null;
 }
+
+function findCubeletAt(cubelets, x, y, z) {
+  for (const cubelet of cubelets) {
+    const p = cubelet.position;
+    if (Math.round(p.x) === x && Math.round(p.y) === y && Math.round(p.z) === z) {
+      return cubelet;
+    }
+  }
+  return null;
+}
+
+// Facelet coordinate maps in standard Kociemba order (U1..U9, R1..R9, F, D, L, B),
+// each face read row by row as viewed from outside the cube.
+const FACELET_POSITIONS = {
+  U: [[-1,1,-1],[0,1,-1],[1,1,-1], [-1,1,0],[0,1,0],[1,1,0], [-1,1,1],[0,1,1],[1,1,1]],
+  R: [[1,1,1],[1,1,0],[1,1,-1], [1,0,1],[1,0,0],[1,0,-1], [1,-1,1],[1,-1,0],[1,-1,-1]],
+  F: [[-1,1,1],[0,1,1],[1,1,1], [-1,0,1],[0,0,1],[1,0,1], [-1,-1,1],[0,-1,1],[1,-1,1]],
+  D: [[-1,-1,1],[0,-1,1],[1,-1,1], [-1,-1,0],[0,-1,0],[1,-1,0], [-1,-1,-1],[0,-1,-1],[1,-1,-1]],
+  L: [[-1,1,-1],[-1,1,0],[-1,1,1], [-1,0,-1],[-1,0,0],[-1,0,1], [-1,-1,-1],[-1,-1,0],[-1,-1,1]],
+  B: [[1,1,-1],[0,1,-1],[-1,1,-1], [1,0,-1],[0,0,-1],[-1,0,-1], [1,-1,-1],[0,-1,-1],[-1,-1,-1]]
+};
+
+const FACE_ORDER = ['U', 'R', 'F', 'D', 'L', 'B'];
+
+// Convert the live 3D cube into a 54-character facelet string like
+// "UUUUUUUUURRRRRRRRR..." that cubejs understands.
+export function cubeToFaceletString(cubelets) {
+  // Color -> face letter mapping derived from the six center stickers
+  const colorToFace = {};
+  for (const face of FACE_ORDER) {
+    const centerPos = FACELET_POSITIONS[face][4];
+    const center = findCubeletAt(cubelets, centerPos[0], centerPos[1], centerPos[2]);
+    if (!center) return null;
+    const color = getStickerColor(center, face);
+    if (color === null) return null;
+    if (colorToFace[color] !== undefined) return null; // duplicate center color
+    colorToFace[color] = face;
+  }
+
+  let facelets = '';
+  for (const face of FACE_ORDER) {
+    for (const pos of FACELET_POSITIONS[face]) {
+      const cubelet = findCubeletAt(cubelets, pos[0], pos[1], pos[2]);
+      if (!cubelet) return null;
+      const color = getStickerColor(cubelet, face);
+      const letter = colorToFace[color];
+      if (!letter) return null; // unknown color (shouldn't happen)
+      facelets += letter;
+    }
+  }
+  return facelets;
+}
+
+// ========== SOLVING ==========
 
 function getMoveDescription(face, clockwise) {
-  const names = { 'R': 'Right', 'L': 'Left', 'U': 'Top', 'D': 'Bottom', 'F': 'Front', 'B': 'Back' };
+  const names = { R: 'Right', L: 'Left', U: 'Top', D: 'Bottom', F: 'Front', B: 'Back' };
   return `Turn ${names[face]} face ${clockwise ? 'clockwise' : 'counter-clockwise'}`;
+}
+
+// Parse a cubejs solution string like "R U' F2 L" into executable steps.
+// Double turns are expanded into two quarter turns for the animation engine.
+function parseSolutionString(solution) {
+  const steps = [];
+  for (const token of solution.trim().split(/\s+/)) {
+    if (!token) continue;
+    const face = token[0];
+    if (!'URFDLB'.includes(face)) continue;
+    const prime = token.includes("'");
+    const double = token.includes('2');
+    const clockwise = !prime;
+    const count = double ? 2 : 1;
+    for (let i = 0; i < count; i++) {
+      steps.push({
+        move: face,
+        clockwise,
+        notation: double ? `${face}2` : (prime ? `${face}'` : face),
+        description: getMoveDescription(face, clockwise)
+      });
+    }
+  }
+  return steps;
+}
+
+// Main entry point: solve the current cube state with Kociemba's algorithm.
+export function solveKociemba(cubelets) {
+  if (typeof window.Cube === 'undefined') {
+    return {
+      solved: false, steps: [], error: true,
+      message: 'Solver library failed to load. Check your internet connection and reload the page.'
+    };
+  }
+
+  const facelets = cubeToFaceletString(cubelets);
+  if (!facelets) {
+    return {
+      solved: false, steps: [], error: true,
+      message: 'Could not read the cube state. Try resetting the cube.'
+    };
+  }
+
+  let cube;
+  try {
+    cube = window.Cube.fromString(facelets);
+  } catch (e) {
+    return {
+      solved: false, steps: [], error: true,
+      message: 'Invalid cube state (this can happen after color-picker edits that create an unsolvable cube). Use Reset and try again.'
+    };
+  }
+
+  if (cube.isSolved()) {
+    return { solved: true, steps: [], method: "Kociemba's Two-Phase Algorithm" };
+  }
+
+  if (!solverInitialized) {
+    return {
+      solved: false, steps: [], notReady: true,
+      message: 'Solver is still initializing (this takes a few seconds after page load). Please try again in a moment.'
+    };
+  }
+
+  let solution;
+  try {
+    solution = cube.solve();
+  } catch (e) {
+    return {
+      solved: false, steps: [], error: true,
+      message: 'No solution exists for this cube state. It is unsolvable (likely due to color-picker edits). Use Reset.'
+    };
+  }
+
+  if (!solution) {
+    return {
+      solved: false, steps: [], error: true,
+      message: 'Solver could not find a solution for this state. Use Reset.'
+    };
+  }
+
+  return {
+    solved: false,
+    steps: parseSolutionString(solution),
+    method: "Kociemba's Two-Phase Algorithm",
+    solutionString: solution
+  };
 }

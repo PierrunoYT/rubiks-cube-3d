@@ -18,8 +18,9 @@ import {
   autoSolve, 
   closeSolutionPanel 
 } from './solution.js';
-import { fastSolve, setMethod, getCurrentMethod } from './fastSolver.js';
-import { updateMoveCounter, updateButtonStates, setupUIEventListeners, updateSolverButtonStates } from './ui.js';
+import { fastSolve } from './fastSolver.js';
+import { initKociemba } from './solverKociemba.js';
+import { updateMoveCounter, updateButtonStates, setupUIEventListeners, setSolverReady } from './ui.js';
 
 // Initialize the application
 function init() {
@@ -66,7 +67,7 @@ function init() {
   };
   
   const fastSolveWrapper = () => {
-    fastSolve(rotateLayerWrapper, updateMoveCounter, updateButtonStates, State.cubelets, State.moveHistory);
+    fastSolve(rotateLayerWrapper, updateMoveCounter, updateButtonStates, State.cubelets);
   };
   
   const resetWrapper = () => {
@@ -131,25 +132,6 @@ function init() {
     );
   };
   
-  // Solver method selection
-  const selectKociembaWrapper = () => {
-    const method = setMethod(0);
-    updateSolverButtonStates(0);
-    console.log(`Selected: ${method.icon} ${method.name} - ${method.description}`);
-  };
-  
-  const selectCFOPWrapper = () => {
-    const method = setMethod(1);
-    updateSolverButtonStates(1);
-    console.log(`Selected: ${method.icon} ${method.name} - ${method.description}`);
-  };
-  
-  const selectBeginnersWrapper = () => {
-    const method = setMethod(2);
-    updateSolverButtonStates(2);
-    console.log(`Selected: ${method.icon} ${method.name} - ${method.description}`);
-  };
-  
   // Expose previewStepWrapper globally for inline button handlers
   window.previewStepWrapper = previewStepWrapper;
   
@@ -169,14 +151,14 @@ function init() {
     previewAll: previewAllWrapper,
     autoSolve: autoSolveWrapper,
     closeSolution: closeSolutionWrapper,
-    toggleLabels: toggleLabelsWrapper,
-    selectKociemba: selectKociembaWrapper,
-    selectCFOP: selectCFOPWrapper,
-    selectBeginners: selectBeginnersWrapper
+    toggleLabels: toggleLabelsWrapper
   });
   
   // 8. Initialize button states
   updateButtonStates(false);
+  
+  // Initialize the Kociemba solver in the background (pruning tables take a few seconds)
+  initKociemba(() => setSolverReady());
   
   // 9. Setup window resize handler
   window.addEventListener('resize', () => {

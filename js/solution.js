@@ -1,77 +1,22 @@
 // ===== SOLUTION FINDER =====
 
 import * as State from './state.js';
+import { solveKociemba } from './solverKociemba.js';
 
-// Access THREE from global scope
-const THREE = window.THREE;
-
-// Function to get the color of a sticker at a specific position
-export function getStickerColor(cubelet, face) {
-  const children = cubelet.children;
-  for (let child of children) {
-    if (child.geometry && child.geometry.type === 'BoxGeometry') {
-      const params = child.geometry.parameters;
-      // Check if it's a sticker (small depth)
-      if (params.depth < 0.1) {
-        // Get the sticker's world position
-        const worldPos = new THREE.Vector3();
-        child.getWorldPosition(worldPos);
-        
-        // Determine which face this sticker is on based on position
-        const tolerance = 0.3;
-        let stickerFace = null;
-        
-        if (Math.abs(worldPos.x - 1) < tolerance) stickerFace = 'R';
-        else if (Math.abs(worldPos.x + 1) < tolerance) stickerFace = 'L';
-        else if (Math.abs(worldPos.y - 1) < tolerance) stickerFace = 'U';
-        else if (Math.abs(worldPos.y + 1) < tolerance) stickerFace = 'D';
-        else if (Math.abs(worldPos.z - 1) < tolerance) stickerFace = 'F';
-        else if (Math.abs(worldPos.z + 1) < tolerance) stickerFace = 'B';
-        
-        if (stickerFace === face && child.material && child.material.color) {
-          return child.material.color.getHex();
-        }
-      }
-    }
-  }
-  return null;
-}
-
-// Function to check if cube is in solved state
-export function isCubeSolved(cubelets) {
-  const faces = ['R', 'L', 'U', 'D', 'F', 'B'];
-  
-  for (let face of faces) {
-    const colors = [];
-    for (let cubelet of cubelets) {
-      const color = getStickerColor(cubelet, face);
-      if (color !== null) {
-        colors.push(color);
-      }
-    }
-    
-    // Check if all colors on this face are the same
-    if (colors.length > 0) {
-      const firstColor = colors[0];
-      for (let color of colors) {
-        if (color !== firstColor) {
-          return false;
-        }
-      }
-    }
-  }
-  
-  return true;
-}
-
-// Simple solving algorithm - finds moves to solve the cube
+// Find solving steps for the current cube state using the Kociemba solver.
+// Falls back to reversing the move history while the solver is initializing.
 export function findSolution(cubelets, moveHistory) {
-  // Check if already solved
-  if (isCubeSolved(cubelets)) {
+  const result = solveKociemba(cubelets);
+  
+  if (result.solved) {
     return { solved: true, steps: [] };
   }
   
-  // If we have move history, use reverse moves (like the solve button)
+  if (!result.error && !result.notReady && result.steps.length > 0) {
+    return { solved: false, steps: result.steps };
+  }
+  
+  // Fallback: reverse the move history (works while solver is initializing)
   if (moveHistory.length > 0) {
     const steps = [];
     const reversedMoves = [...moveHistory].reverse();
@@ -89,13 +34,11 @@ export function findSolution(cubelets, moveHistory) {
     return { solved: false, steps: steps };
   }
   
-  // For manually created states (using color picker), try to find a solution
-  // This is a simplified approach - a real solver would use algorithms like Kociemba
   return { 
     solved: false, 
     steps: [],
     needsManualSolve: true,
-    message: "Cube was modified with color picker. Try using Reset to return to solved state, or manually solve using standard Rubik's cube methods."
+    message: result.message || "Could not find a solution for this cube state. Use Reset to return to a solved state."
   };
 }
 

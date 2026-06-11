@@ -29,7 +29,13 @@ export function rotateLayer(face, clockwise = true, recordMove = true, state) {
     }
   }
 
-  const angle = clockwise ? Math.PI / 2 : -Math.PI / 2;
+  // Standard cube notation: "clockwise" means as viewed from outside the face.
+  // For faces on the positive axis side (R, U, F) that is a negative rotation
+  // around the axis; for L, D, B (and the slices M, E which follow L and D)
+  // it is a positive rotation.
+  const negativeFaces = ['R', 'U', 'F', 'S'];
+  const sign = negativeFaces.includes(face) ? -1 : 1;
+  const angle = (clockwise ? Math.PI / 2 : -Math.PI / 2) * sign;
   const duration = 300;
   const startTime = Date.now();
 

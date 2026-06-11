@@ -162,6 +162,21 @@ body {
   text-align: center;
 }
 
+.solver-status {
+  font-size: 12px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: rgba(255, 200, 80, 0.15);
+  color: #ffc850;
+  text-align: center;
+}
+
+.solver-status.ready {
+  background: rgba(78, 205, 196, 0.15);
+  color: #4ecdc4;
+}
+
 .solver-btn {
   width: 100%;
   background: linear-gradient(145deg, #2a2a3a, #1a1a2a);
