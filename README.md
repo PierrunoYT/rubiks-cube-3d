@@ -92,6 +92,8 @@ An interactive 3D Rubik's Cube built with Three.js that you can solve in your br
 | **D** / **Shift+D** | Down/Bottom face |
 | **F** / **Shift+F** | Front face |
 | **B** / **Shift+B** | Back face |
+| **M** / **Shift+M** | Middle slice (follows L) |
+| **E** / **Shift+E** | Equator slice (follows D) |
 | **S** | Scramble cube |
 
 ### View Controls
@@ -172,6 +174,7 @@ No build process, no dependencies to install. Just open and play!
   - **controls.js**: Keyboard and mouse input handling
   - **colorPicker.js**: Color picker functionality
   - **solution.js**: Solution finding and execution system
+  - **modal.js**: Themed result modal (replaces native `alert()` for solve results)
   - **ui.js**: UI updates and event listener management
   - **main.js**: Application orchestration and initialization
 
@@ -192,7 +195,7 @@ No build process, no dependencies to install. Just open and play!
 
 ### Cube Construction
 - **27 Cubelets**: Each cubelet is an independent group
-- **Black Plastic Bodies**: 0.88 unit cubes with gaps for realism
+- **Black Plastic Body**: Single 0.9 unit mesh per cubelet with gaps for realism
 - **Colored Stickers**: Separate geometry with borders and beveling
 - **Efficient Filtering**: Layer selection uses position-based filtering
 - **State Tracking**: Complete move history for undo/solve functionality
@@ -230,6 +233,7 @@ rubiks-cube-3d/
 │   ├── solution.js         # Solution finding and execution
 │   ├── solverKociemba.js   # Kociemba two-phase solver integration (cubejs)
 │   ├── fastSolver.js       # Fast solve execution
+│   ├── modal.js            # Themed result modal (replaces native alert())
 │   └── ui.js               # UI management and updates
 ├── rubikscube.html         # Main HTML structure and UI elements
 ├── rubikscube.css          # Styling, animations, and theme
