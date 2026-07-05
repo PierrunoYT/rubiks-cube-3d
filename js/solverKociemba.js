@@ -49,8 +49,10 @@ export function isSolverReady() {
 function getStickerColor(cubelet, targetFace) {
   for (const child of cubelet.children) {
     if (child.geometry?.type === 'BoxGeometry' && child.geometry.parameters.depth < 0.1) {
-      // Skip the dark border meshes behind each sticker
-      if (child.material?.color && child.material.color.getHex() === 0x333333) continue;
+      // Skip the border meshes behind each sticker. Identify them by size
+      // (0.87 vs the sticker's 0.85) rather than color, since a border could
+      // in principle be repainted via the color picker.
+      if (child.geometry.parameters.width > 0.86) continue;
 
       const worldPos = new THREE.Vector3();
       child.getWorldPosition(worldPos);
@@ -144,10 +146,12 @@ function parseSolutionString(solution) {
     const clockwise = !prime;
     const count = double ? 2 : 1;
     for (let i = 0; i < count; i++) {
+      // Each expanded step carries quarter-turn notation; the solution panel
+      // groups consecutive identical steps itself (a U2 displays as "U (x2)").
       steps.push({
         move: face,
         clockwise,
-        notation: double ? `${face}2` : (prime ? `${face}'` : face),
+        notation: prime ? `${face}'` : face,
         description: getMoveDescription(face, clockwise)
       });
     }

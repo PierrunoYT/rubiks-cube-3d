@@ -7,6 +7,9 @@ const THREE = window.THREE;
 
 export function setupKeyboardControls(rotateLayerFn, scrambleFn) {
   document.addEventListener('keydown', (e) => {
+    // Leave browser shortcuts (Ctrl+R reload, Ctrl+F find, ...) alone
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
     const key = e.key.toLowerCase();
     const clockwise = !e.shiftKey;
 

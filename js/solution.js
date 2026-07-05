@@ -44,16 +44,31 @@ export function findSolution(cubelets, moveHistory) {
 
 export function getMoveDescription(face, clockwise) {
   const faceNames = {
-    'R': 'Right',
-    'L': 'Left',
-    'U': 'Top',
-    'D': 'Bottom',
-    'F': 'Front',
-    'B': 'Back'
+    'R': 'Right face',
+    'L': 'Left face',
+    'U': 'Top face',
+    'D': 'Bottom face',
+    'F': 'Front face',
+    'B': 'Back face',
+    'M': 'Middle slice',
+    'E': 'Equator slice',
+    'S': 'Standing slice'
   };
-  
+
   const direction = clockwise ? 'clockwise' : 'counter-clockwise';
-  return `Turn ${faceNames[face]} face ${direction}`;
+  return `Turn ${faceNames[face] || face} ${direction}`;
+}
+
+// Run `callback` once the current layer animation has finished. Fixed
+// timeouts are unreliable here: requestAnimationFrame is throttled or paused
+// in background tabs, and rotateLayer silently drops calls while a rotation
+// is in progress — which would desync the cube from the solution steps.
+function waitForRotation(callback) {
+  if (State.isRotating) {
+    setTimeout(() => waitForRotation(callback), 50);
+    return;
+  }
+  callback();
 }
 
 // Show solution panel
@@ -213,19 +228,19 @@ export function previewStep(stepIndex, rotateLayerFn, showRotationIndicatorFn, c
   setTimeout(() => {
     // Perform the rotation
     rotateLayerFn(step.move, step.clockwise, false);
-    
+
     // Wait for rotation to complete, then reverse it
-    setTimeout(() => {
+    waitForRotation(() => {
       clearRotationIndicatorsFn();
-      
+
       // Reverse the rotation (move back)
       rotateLayerFn(step.move, !step.clockwise, false);
-      
+
       // Clear everything after reverse completes
-      setTimeout(() => {
+      waitForRotation(() => {
         State.setIsPreviewing(false);
-      }, 350);
-    }, 350);
+      });
+    });
   }, 1000);
 }
 
@@ -298,20 +313,20 @@ export function previewAllSteps(rotateLayerFn, showRotationIndicatorFn, clearRot
     // Perform the rotation after showing indicator
     setTimeout(() => {
       rotateLayerFn(step.move, step.clockwise, false);
-      
+
       // Wait for rotation to complete, then reverse it
-      setTimeout(() => {
+      waitForRotation(() => {
         clearRotationIndicatorsFn();
-        
+
         // Reverse the rotation
         rotateLayerFn(step.move, !step.clockwise, false);
-        
+
         // Move to next preview after reverse completes
-        setTimeout(() => {
+        waitForRotation(() => {
           previewIndex++;
           showNextPreview();
-        }, 350);
-      }, 350);
+        });
+      });
     }, 800);
   }
   
@@ -343,12 +358,12 @@ export function executeNextStep(rotateLayerFn, showRotationIndicatorFn, clearRot
   // Execute the move after a short delay so user can see the indicator
   setTimeout(() => {
     rotateLayerFn(step.move, step.clockwise, false);
-    
+
     // Clear indicator after move completes
-    setTimeout(() => {
+    waitForRotation(() => {
       clearRotationIndicatorsFn();
       State.setIsStepExecuting(false);
-    }, 350);
+    });
   }, 1500);
   
   State.setCurrentStepIndex(State.currentStepIndex + 1);
@@ -429,12 +444,12 @@ export function autoSolve(rotateLayerFn, showRotationIndicatorFn, clearRotationI
       rotateLayerFn(step.move, step.clockwise, false);
       State.setCurrentStepIndex(State.currentStepIndex + 1);
       displaySolutionSteps();
-      
+
       // Clear indicator and move to next step
-      setTimeout(() => {
+      waitForRotation(() => {
         clearRotationIndicatorsFn();
         executeStep();
-      }, 350);
+      });
     }, 800);
   }
   

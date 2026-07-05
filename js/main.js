@@ -50,28 +50,32 @@ function init() {
   State.setFaceLabels(faceLabels);
   
   // 5. Create wrapper functions that pass necessary dependencies
+  const invalidateSolutionWrapper = () => {
+    invalidateSolution(() => clearRotationIndicators(scene, State.rotationIndicators));
+  };
+
   const rotateLayerWrapper = (face, clockwise = true, recordMove = true) => {
     rotateLayer(face, clockwise, recordMove, {
       updateMoveCounter,
       updateButtonStates,
-      invalidateSolution: () => invalidateSolution(() => clearRotationIndicators(scene, State.rotationIndicators))
+      invalidateSolution: invalidateSolutionWrapper
     });
   };
-  
+
   const scrambleWrapper = () => {
-    scrambleCube(rotateLayerWrapper, updateButtonStates);
+    scrambleCube(rotateLayerWrapper, updateButtonStates, invalidateSolutionWrapper);
   };
-  
+
   const solveWrapper = () => {
-    solveCube(rotateLayerWrapper, updateMoveCounter, updateButtonStates);
+    solveCube(rotateLayerWrapper, updateMoveCounter, updateButtonStates, invalidateSolutionWrapper);
   };
-  
+
   const fastSolveWrapper = () => {
-    fastSolve(rotateLayerWrapper, updateMoveCounter, updateButtonStates, State.cubelets);
+    fastSolve(rotateLayerWrapper, updateMoveCounter, updateButtonStates, State.cubelets, invalidateSolutionWrapper);
   };
-  
+
   const resetWrapper = () => {
-    resetCube(State.cubelets, State.initialState, updateMoveCounter, updateButtonStates);
+    resetCube(State.cubelets, State.initialState, updateMoveCounter, updateButtonStates, invalidateSolutionWrapper);
   };
   
   const showRotationIndicatorWrapper = (face, clockwise, rotationCount) => {

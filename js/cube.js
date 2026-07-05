@@ -17,25 +17,16 @@ export const faceColors = {
 function createCubelet(x, y, z) {
   const cubeletGroup = new THREE.Group();
   
-  // Black cube body (slightly smaller to create gaps)
-  const blackMaterial = new THREE.MeshPhongMaterial({ 
-    color: 0x000000,
-    shininess: 30
-  });
-  const bodyGeometry = new THREE.BoxGeometry(0.88, 0.88, 0.88);
-  const body = new THREE.Mesh(bodyGeometry, blackMaterial);
-  body.castShadow = true;
-  body.receiveShadow = true;
-  cubeletGroup.add(body);
-  
-  // Add rounded corners effect with edge highlights
-  const edgeGeometry = new THREE.BoxGeometry(0.9, 0.9, 0.9);
-  const edgeMaterial = new THREE.MeshPhongMaterial({ 
+  // Dark cube body (slightly smaller than 1 to create gaps between cubelets)
+  const bodyGeometry = new THREE.BoxGeometry(0.9, 0.9, 0.9);
+  const bodyMaterial = new THREE.MeshPhongMaterial({
     color: 0x1a1a1a,
     shininess: 50
   });
-  const edges = new THREE.Mesh(edgeGeometry, edgeMaterial);
-  cubeletGroup.add(edges);
+  const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+  body.castShadow = true;
+  body.receiveShadow = true;
+  cubeletGroup.add(body);
   
   // Create stickers (colored squares) on visible faces
   const stickerSize = 0.85;

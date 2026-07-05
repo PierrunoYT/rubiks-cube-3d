@@ -5,9 +5,12 @@ import * as State from './state.js';
 // Access THREE from global scope
 const THREE = window.THREE;
 
-export function scrambleCube(rotateLayerFn, updateButtonStatesFn) {
+export function scrambleCube(rotateLayerFn, updateButtonStatesFn, invalidateSolutionFn) {
   if (State.isRotating || State.isBusy()) return;
-  
+
+  // A previously computed solution no longer matches the cube after scrambling
+  if (typeof invalidateSolutionFn === 'function') invalidateSolutionFn();
+
   State.setIsScrambling(true);
   const faces = ['R', 'L', 'U', 'D', 'F', 'B'];
   const moves = 20;
@@ -53,9 +56,11 @@ export function scrambleCube(rotateLayerFn, updateButtonStatesFn) {
   doMove();
 }
 
-export function solveCube(rotateLayerFn, updateMoveCounterFn, updateButtonStatesFn) {
+export function solveCube(rotateLayerFn, updateMoveCounterFn, updateButtonStatesFn, invalidateSolutionFn) {
   if (State.isRotating || State.isBusy() || State.moveHistory.length === 0) return;
-  
+
+  if (typeof invalidateSolutionFn === 'function') invalidateSolutionFn();
+
   State.setIsSolving(true);
   updateButtonStatesFn(true);
 
@@ -90,9 +95,11 @@ export function solveCube(rotateLayerFn, updateMoveCounterFn, updateButtonStates
   doMove();
 }
 
-export function resetCube(cubelets, initialState, updateMoveCounterFn, updateButtonStatesFn) {
+export function resetCube(cubelets, initialState, updateMoveCounterFn, updateButtonStatesFn, invalidateSolutionFn) {
   if (State.isRotating || State.isBusy()) return;
-  
+
+  if (typeof invalidateSolutionFn === 'function') invalidateSolutionFn();
+
   State.setIsRotating(true);
   updateButtonStatesFn(true);
   

@@ -8,7 +8,7 @@ export function findOptimalSolution(cubelets) {
   return solveKociemba(cubelets);
 }
 
-export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStatesFn, cubelets) {
+export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStatesFn, cubelets, invalidateSolutionFn) {
   if (State.isRotating || State.isBusy()) return;
 
   const result = solveKociemba(cubelets);
@@ -22,6 +22,9 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
     alert(`🎯 Kociemba Solver\n\n${result.message || 'No solution found.'}`);
     return;
   }
+
+  // A solution shown in the panel no longer matches the cube once we solve it
+  if (typeof invalidateSolutionFn === 'function') invalidateSolutionFn();
 
   State.setIsSolving(true);
   updateButtonStatesFn(true);
@@ -46,11 +49,13 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
       updateButtonStatesFn(false);
 
       setTimeout(() => {
+        // Count notation moves (U2 = one move), not expanded quarter turns
+        const moveCount = result.solutionString.trim().split(/\s+/).length;
         alert(
           `✨ Cube Solved!\n\n` +
           `Method: 🎯 ${result.method}\n` +
           `Solution: ${result.solutionString}\n` +
-          `Moves: ${steps.length}\n` +
+          `Moves: ${moveCount}\n` +
           `Time: ${elapsed}s`
         );
       }, 300);

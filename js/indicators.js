@@ -109,8 +109,46 @@ export function createRotationArrow(face, clockwise, rotationCount = 1) {
       cone3.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, clockwise ? Math.PI/2 : -Math.PI/2, 0);
       cone4.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, clockwise ? Math.PI/2 : -Math.PI/2, 0);
       break;
+    case 'M': // Middle slice (x = 0) - rotates like L
+      position = new THREE.Vector3(0, 0, 0);
+      cone1.position.set(0, 0.7, 0.7);
+      cone2.position.set(0, 0.7, -0.7);
+      cone3.position.set(0, -0.7, 0.7);
+      cone4.position.set(0, -0.7, -0.7);
+      cone1.rotation.set(0, clockwise ? 0 : Math.PI, clockwise ? Math.PI/4 : -Math.PI/4);
+      cone2.rotation.set(0, clockwise ? 0 : Math.PI, clockwise ? -Math.PI/4 : Math.PI/4);
+      cone3.rotation.set(0, clockwise ? Math.PI : 0, clockwise ? Math.PI/4 : -Math.PI/4);
+      cone4.rotation.set(0, clockwise ? Math.PI : 0, clockwise ? -Math.PI/4 : Math.PI/4);
+      break;
+    case 'E': // Equator slice (y = 0) - rotates like D
+      position = new THREE.Vector3(0, 0, 0);
+      cone1.position.set(0.7, 0, 0.7);
+      cone2.position.set(0.7, 0, -0.7);
+      cone3.position.set(-0.7, 0, 0.7);
+      cone4.position.set(-0.7, 0, -0.7);
+      cone1.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, 0, clockwise ? Math.PI/2 : -Math.PI/2);
+      cone2.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, 0, clockwise ? Math.PI/2 : -Math.PI/2);
+      cone3.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, 0, clockwise ? -Math.PI/2 : Math.PI/2);
+      cone4.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, 0, clockwise ? -Math.PI/2 : Math.PI/2);
+      break;
+    case 'S': // Standing slice (z = 0) - rotates like F
+      position = new THREE.Vector3(0, 0, 0);
+      cone1.position.set(0.7, 0.7, 0);
+      cone2.position.set(0.7, -0.7, 0);
+      cone3.position.set(-0.7, 0.7, 0);
+      cone4.position.set(-0.7, -0.7, 0);
+      cone1.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, clockwise ? -Math.PI/2 : Math.PI/2, 0);
+      cone2.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, clockwise ? -Math.PI/2 : Math.PI/2, 0);
+      cone3.rotation.set(clockwise ? Math.PI/4 : -Math.PI/4, clockwise ? Math.PI/2 : -Math.PI/2, 0);
+      cone4.rotation.set(clockwise ? -Math.PI/4 : Math.PI/4, clockwise ? Math.PI/2 : -Math.PI/2, 0);
+      break;
+    default:
+      // Unknown face: never crash the caller (a throw here would leave
+      // isStepExecuting/isPreviewing stuck and freeze all input)
+      position = new THREE.Vector3(0, 0, 0);
+      break;
   }
-  
+
   group.add(cone1, cone2, cone3, cone4);
   group.position.copy(position);
   
@@ -211,6 +249,15 @@ export function highlightLayer(cubelets, face) {
       break;
     case 'B':
       cubeletsToHighlight = cubelets.filter(c => Math.abs(c.position.z + 1) < 0.1);
+      break;
+    case 'M':
+      cubeletsToHighlight = cubelets.filter(c => Math.abs(c.position.x) < 0.1);
+      break;
+    case 'E':
+      cubeletsToHighlight = cubelets.filter(c => Math.abs(c.position.y) < 0.1);
+      break;
+    case 'S':
+      cubeletsToHighlight = cubelets.filter(c => Math.abs(c.position.z) < 0.1);
       break;
   }
   

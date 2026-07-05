@@ -58,8 +58,9 @@ export function setupColorPicker(scene, renderer, camera) {
             object.geometry && object.geometry.type === 'BoxGeometry') {
           
           // Check if it's a sticker by checking its dimensions
+          // (stickers are 0.85; the border meshes behind them are 0.87)
           const params = object.geometry.parameters;
-          if (params.width < 0.9 && params.height < 0.9 && params.depth < 0.1) {
+          if (params.width < 0.86 && params.height < 0.86 && params.depth < 0.1) {
             // This is a sticker! Change its color
             object.material.color.setHex(State.selectedColor);
             break;
