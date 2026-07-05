@@ -9,6 +9,7 @@ import { rotateLayer } from './rotation.js';
 import { scrambleCube, solveCube, resetCube } from './actions.js';
 import { setupKeyboardControls, setupMouseControls } from './controls.js';
 import { setupColorPicker } from './colorPicker.js';
+import { setupModal } from './modal.js';
 import { 
   showSolution, 
   invalidateSolution, 
@@ -143,6 +144,7 @@ function init() {
   setupKeyboardControls(rotateLayerWrapper, scrambleWrapper);
   setupMouseControls(camera, renderer, cubeGroup, rotateLayerWrapper);
   setupColorPicker(scene, renderer, camera);
+  setupModal();
   
   // 7. Setup UI event listeners
   setupUIEventListeners({

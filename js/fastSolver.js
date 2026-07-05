@@ -3,6 +3,7 @@
 
 import * as State from './state.js';
 import { solveKociemba } from './solverKociemba.js';
+import { showModal } from './modal.js';
 
 export function findOptimalSolution(cubelets) {
   return solveKociemba(cubelets);
@@ -14,12 +15,16 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
   const result = solveKociemba(cubelets);
 
   if (result.solved) {
-    alert('✨ Cube is already solved!');
+    showModal({ icon: '✨', title: 'Cube is already solved!' });
     return;
   }
 
   if (result.error || result.notReady || result.steps.length === 0) {
-    alert(`🎯 Kociemba Solver\n\n${result.message || 'No solution found.'}`);
+    showModal({
+      icon: '🎯',
+      title: 'Kociemba Solver',
+      stats: [{ value: result.message || 'No solution found.' }]
+    });
     return;
   }
 
@@ -51,13 +56,18 @@ export function fastSolve(rotateLayerFn, updateMoveCounterFn, updateButtonStates
       setTimeout(() => {
         // Count notation moves (U2 = one move), not expanded quarter turns
         const moveCount = result.solutionString.trim().split(/\s+/).length;
-        alert(
-          `✨ Cube Solved!\n\n` +
-          `Method: 🎯 ${result.method}\n` +
-          `Solution: ${result.solutionString}\n` +
-          `Moves: ${moveCount}\n` +
-          `Time: ${elapsed}s`
-        );
+        showModal({
+          icon: '✨',
+          title: 'Cube Solved!',
+          stats: [
+            { label: 'Method', value: `🎯 ${result.method}` },
+            { label: 'Solution', value: result.solutionString, mono: true }
+          ],
+          statsRow: [
+            { label: 'Moves', value: String(moveCount) },
+            { label: 'Time', value: `${elapsed}s` }
+          ]
+        });
       }, 300);
       return;
     }
