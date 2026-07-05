@@ -21,8 +21,11 @@ body {
   background: rgba(10, 10, 20, 0.85);
   padding: 20px 25px;
   border-radius: 12px;
+  -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
   max-width: 300px;
+  max-height: 70vh;
+  overflow-y: auto;
   border: 1px solid rgba(78, 205, 196, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
@@ -83,6 +86,7 @@ body {
   background: rgba(10, 10, 20, 0.85);
   padding: 12px 25px;
   border-radius: 8px;
+  -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
   font-size: 14px;
   border: 1px solid rgba(78, 205, 196, 0.2);
@@ -109,6 +113,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -140,6 +145,7 @@ body {
   background: rgba(10, 10, 20, 0.9);
   padding: 20px 25px;
   border-radius: 12px;
+  -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
   border: 1px solid rgba(78, 205, 196, 0.3);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -175,61 +181,6 @@ body {
 .solver-status.ready {
   background: rgba(78, 205, 196, 0.15);
   color: #4ecdc4;
-}
-
-.solver-btn {
-  width: 100%;
-  background: linear-gradient(145deg, #2a2a3a, #1a1a2a);
-  color: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(78, 205, 196, 0.2);
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.solver-btn:hover {
-  background: linear-gradient(145deg, #3a3a4a, #2a2a3a);
-  border-color: rgba(78, 205, 196, 0.5);
-  box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
-  transform: translateX(-3px);
-}
-
-.solver-btn.active {
-  background: linear-gradient(145deg, #3a4a4a, #2a3a3a);
-  border-color: #4ecdc4;
-  color: #4ecdc4;
-  box-shadow: 0 0 20px rgba(78, 205, 196, 0.4);
-  font-weight: 600;
-}
-
-.solver-btn.active .solver-icon {
-  transform: scale(1.2);
-  filter: drop-shadow(0 0 5px rgba(78, 205, 196, 0.6));
-}
-
-.solver-icon {
-  font-size: 20px;
-  transition: transform 0.3s ease;
-}
-
-.solver-name {
-  flex: 1;
-  text-align: left;
-  margin-left: 12px;
-  font-weight: 600;
-}
-
-.solver-info {
-  font-size: 10px;
-  opacity: 0.7;
-  font-weight: 400;
 }
 
 .fast-solve-execute {
@@ -275,6 +226,7 @@ body {
   text-align: center;
   font-size: 14px;
   font-weight: 600;
+  -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
@@ -292,6 +244,7 @@ body {
   background: rgba(10, 10, 20, 0.85);
   padding: 20px 25px;
   border-radius: 12px;
+  -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
   max-width: 300px;
   border: 1px solid rgba(78, 205, 196, 0.2);
@@ -322,17 +275,24 @@ body {
 .color-option {
   width: 50px;
   height: 50px;
+  padding: 0;
   border-radius: 8px;
   cursor: pointer;
   border: 3px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  font-family: inherit;
 }
 
 .color-option:hover {
   transform: scale(1.1);
   border-color: rgba(78, 205, 196, 0.5);
   box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+}
+
+.color-option:focus-visible {
+  outline: 2px solid #4ecdc4;
+  outline-offset: 2px;
 }
 
 .color-option.selected {
@@ -344,18 +304,20 @@ body {
 
 #solutionPanel {
   position: absolute;
-  top: 50%;
+  /* Anchored between #actions (top right) and #solverPanel (bottom right)
+     instead of vertically centered, so it can't paint over either. */
+  top: 260px;
+  bottom: 200px;
   right: 20px;
-  transform: translateY(-50%);
   color: white;
   background: rgba(10, 10, 20, 0.95);
   padding: 20px 25px;
   border-radius: 12px;
+  -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
   max-width: 320px;
   border: 1px solid rgba(78, 205, 196, 0.3);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  max-height: 70vh;
   overflow-y: auto;
 }
 
@@ -523,6 +485,7 @@ body {
   background: rgba(10, 10, 20, 0.85);
   padding: 15px 20px;
   border-radius: 12px;
+  -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
   border: 1px solid rgba(78, 205, 196, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -591,5 +554,13 @@ body {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.8);
   margin-top: 2px;
+}
+
+/* #notationGuide is centered at the top and collides with #controls and
+   #actions once the viewport is too narrow for all three side by side. */
+@media (max-width: 900px) {
+  #notationGuide {
+    display: none;
+  }
 }
 

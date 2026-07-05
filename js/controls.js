@@ -35,8 +35,9 @@ export function setupKeyboardControls(rotateLayerFn, scrambleFn) {
     if (key === 'm') rotateLayerFn('M', clockwise);
     if (key === 'e') rotateLayerFn('E', clockwise);
     
-    // Scramble
-    if (key === 's') scrambleFn();
+    // Scramble (Shift+S is intentionally not bound, so it can't be triggered
+    // by accident while doing Shift+face reverse moves)
+    if (key === 's' && !e.shiftKey) scrambleFn();
   });
 }
 
