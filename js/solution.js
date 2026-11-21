@@ -190,8 +190,10 @@ export function displaySolutionSteps() {
       }
     };
     
+    stepDiv.dataset.firstIndex = firstIndex;
+    stepDiv.dataset.lastIndex = lastIndex;
     stepDiv.innerHTML = `
-      <span class="step-number">${firstIndex + 1}.</span>
+      <span class="step-number">${groupIndex + 1}.</span>
       <span class="step-move">${notation}</span>
       <span>${description}</span>
     `;
@@ -300,11 +302,9 @@ export function previewAllSteps(rotateLayerFn, showRotationIndicatorFn, clearRot
     const stepDivs = stepsContainer.querySelectorAll('.solution-step');
     stepDivs.forEach(div => div.classList.remove('previewing'));
     
-    // Find and highlight the correct step div
+    // Highlight the step group containing this quarter turn
     for (let div of stepDivs) {
-      const stepNumberText = div.querySelector('.step-number').textContent;
-      const stepNum = parseInt(stepNumberText) - 1;
-      if (stepNum === previewIndex) {
+      if (Number(div.dataset.firstIndex) <= previewIndex && previewIndex <= Number(div.dataset.lastIndex)) {
         div.classList.add('previewing');
         break;
       }

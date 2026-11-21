@@ -24,7 +24,9 @@ body {
   -webkit-backdrop-filter: blur(15px);
   backdrop-filter: blur(15px);
   max-width: 300px;
-  max-height: 70vh;
+  box-sizing: border-box;
+  /* Leave room for #colorPicker (~220px tall, anchored bottom-left) */
+  max-height: calc(100vh - 300px);
   overflow-y: auto;
   border: 1px solid rgba(78, 205, 196, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -306,8 +308,8 @@ body {
   position: absolute;
   /* Anchored between #actions (top right) and #solverPanel (bottom right)
      instead of vertically centered, so it can't paint over either. */
-  top: 260px;
-  bottom: 200px;
+  top: 310px;
+  bottom: 240px;
   right: 20px;
   color: white;
   background: rgba(10, 10, 20, 0.95);
